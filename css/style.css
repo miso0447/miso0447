@@ -1,19 +1,19 @@
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+﻿@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
   --bg-primary: #f0f4f9;
   --bg-secondary: #e5edf7;
   --clay-card-bg: #eaf0f8;
   --clay-white: #ffffff;
-  
+
   /* Primary Clay Shadows */
   --clay-shadow-out: 14px 14px 28px rgba(163, 177, 198, 0.45), -14px -14px 28px rgba(255, 255, 255, 0.95);
   --clay-shadow-out-sm: 8px 8px 16px rgba(163, 177, 198, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.95);
   --clay-shadow-out-lg: 20px 20px 40px rgba(163, 177, 198, 0.5), -20px -20px 40px rgba(255, 255, 255, 0.95);
-  
+
   --clay-shadow-in: inset 3px 3px 6px rgba(255, 255, 255, 0.9), inset -3px -3px 6px rgba(163, 177, 198, 0.3);
   --clay-shadow-in-deep: inset 5px 5px 10px rgba(163, 177, 198, 0.35), inset -5px -5px 10px rgba(255, 255, 255, 0.9);
-  
+
   /* Accent Colors */
   --clay-purple: #7c3aed;
   --clay-indigo: #4f46e5;
@@ -33,7 +33,7 @@ body {
 
 /* Background floating decorative blobs */
 .bg-mesh {
-  background-image: 
+  background-image:
     radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.07) 0px, transparent 50%),
     radial-gradient(at 90% 10%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
     radial-gradient(at 50% 80%, rgba(6, 182, 212, 0.07) 0px, transparent 50%),
@@ -44,9 +44,9 @@ body {
 .clay-card {
   background: var(--clay-card-bg);
   border-radius: 28px;
-  box-shadow: 14px 14px 28px rgba(163, 177, 198, 0.45), 
-              -14px -14px 28px rgba(255, 255, 255, 0.95), 
-              inset 3px 3px 5px rgba(255, 255, 255, 0.8), 
+  box-shadow: 14px 14px 28px rgba(163, 177, 198, 0.45),
+              -14px -14px 28px rgba(255, 255, 255, 0.95),
+              inset 3px 3px 5px rgba(255, 255, 255, 0.8),
               inset -3px -3px 5px rgba(163, 177, 198, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.6);
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -54,9 +54,9 @@ body {
 
 .clay-card:hover {
   transform: translateY(-6px) scale(1.01);
-  box-shadow: 18px 18px 36px rgba(163, 177, 198, 0.55), 
-              -18px -18px 36px rgba(255, 255, 255, 1), 
-              inset 4px 4px 6px rgba(255, 255, 255, 0.85), 
+  box-shadow: 18px 18px 36px rgba(163, 177, 198, 0.55),
+              -18px -18px 36px rgba(255, 255, 255, 1),
+              inset 4px 4px 6px rgba(255, 255, 255, 0.85),
               inset -4px -4px 6px rgba(163, 177, 198, 0.2);
 }
 
@@ -66,9 +66,9 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: 9999px;
-  box-shadow: 10px 10px 24px rgba(163, 177, 198, 0.4), 
-              -10px -10px 24px rgba(255, 255, 255, 0.9), 
-              inset 2px 2px 4px rgba(255, 255, 255, 0.8), 
+  box-shadow: 10px 10px 24px rgba(163, 177, 198, 0.4),
+              -10px -10px 24px rgba(255, 255, 255, 0.9),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.8),
               inset -2px -2px 4px rgba(163, 177, 198, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.7);
 }
@@ -77,14 +77,14 @@ body {
 .clay-inset {
   background: #e2ebf5;
   border-radius: 9999px;
-  box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.45), 
+  box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.45),
               inset -4px -4px 8px rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.25s ease;
 }
 
 .clay-inset:focus-within {
-  box-shadow: inset 5px 5px 10px rgba(99, 102, 241, 0.25), 
+  box-shadow: inset 5px 5px 10px rgba(99, 102, 241, 0.25),
               inset -5px -5px 10px rgba(255, 255, 255, 0.95),
               0 0 0 3px rgba(99, 102, 241, 0.25);
 }
@@ -110,17 +110,17 @@ body {
 .clay-btn-primary {
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   color: #ffffff;
-  box-shadow: 6px 6px 14px rgba(99, 102, 241, 0.35), 
-              -3px -3px 8px rgba(255, 255, 255, 0.4), 
-              inset 2px 2px 4px rgba(255, 255, 255, 0.5), 
+  box-shadow: 6px 6px 14px rgba(99, 102, 241, 0.35),
+              -3px -3px 8px rgba(255, 255, 255, 0.4),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.5),
               inset -2px -2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .clay-btn-primary:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 8px 10px 20px rgba(99, 102, 241, 0.45), 
-              -4px -4px 10px rgba(255, 255, 255, 0.5), 
-              inset 3px 3px 5px rgba(255, 255, 255, 0.6), 
+  box-shadow: 8px 10px 20px rgba(99, 102, 241, 0.45),
+              -4px -4px 10px rgba(255, 255, 255, 0.5),
+              inset 3px 3px 5px rgba(255, 255, 255, 0.6),
               inset -3px -3px 5px rgba(0, 0, 0, 0.25);
 }
 
@@ -128,9 +128,9 @@ body {
 .clay-btn-secondary {
   background: #eaf0f8;
   color: #4a5568;
-  box-shadow: 6px 6px 14px rgba(163, 177, 198, 0.4), 
-              -6px -6px 14px rgba(255, 255, 255, 0.95), 
-              inset 2px 2px 3px rgba(255, 255, 255, 0.8), 
+  box-shadow: 6px 6px 14px rgba(163, 177, 198, 0.4),
+              -6px -6px 14px rgba(255, 255, 255, 0.95),
+              inset 2px 2px 3px rgba(255, 255, 255, 0.8),
               inset -2px -2px 3px rgba(163, 177, 198, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
@@ -138,7 +138,7 @@ body {
 .clay-btn-secondary:hover {
   color: #1a202c;
   transform: translateY(-2px);
-  box-shadow: 8px 8px 18px rgba(163, 177, 198, 0.5), 
+  box-shadow: 8px 8px 18px rgba(163, 177, 198, 0.5),
               -8px -8px 18px rgba(255, 255, 255, 1);
 }
 
@@ -146,27 +146,27 @@ body {
 .clay-btn-emerald {
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   color: white;
-  box-shadow: 6px 6px 14px rgba(16, 185, 129, 0.35), 
-              -3px -3px 8px rgba(255, 255, 255, 0.4), 
-              inset 2px 2px 4px rgba(255, 255, 255, 0.5), 
+  box-shadow: 6px 6px 14px rgba(16, 185, 129, 0.35),
+              -3px -3px 8px rgba(255, 255, 255, 0.4),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.5),
               inset -2px -2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .clay-btn-coral {
   background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
   color: white;
-  box-shadow: 6px 6px 14px rgba(244, 63, 94, 0.35), 
-              -3px -3px 8px rgba(255, 255, 255, 0.4), 
-              inset 2px 2px 4px rgba(255, 255, 255, 0.5), 
+  box-shadow: 6px 6px 14px rgba(244, 63, 94, 0.35),
+              -3px -3px 8px rgba(255, 255, 255, 0.4),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.5),
               inset -2px -2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Clay Badge / Pill */
 .clay-badge {
   border-radius: 9999px;
-  box-shadow: 4px 4px 8px rgba(163, 177, 198, 0.35), 
-              -4px -4px 8px rgba(255, 255, 255, 0.9), 
-              inset 2px 2px 3px rgba(255, 255, 255, 0.8), 
+  box-shadow: 4px 4px 8px rgba(163, 177, 198, 0.35),
+              -4px -4px 8px rgba(255, 255, 255, 0.9),
+              inset 2px 2px 3px rgba(255, 255, 255, 0.8),
               inset -2px -2px 3px rgba(163, 177, 198, 0.2);
 }
 
@@ -178,9 +178,9 @@ body {
   padding: 0.6rem 1.3rem;
   font-size: 0.9rem;
   font-weight: 700;
-  box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.35), 
-              -6px -6px 12px rgba(255, 255, 255, 0.95), 
-              inset 2px 2px 3px rgba(255, 255, 255, 0.8), 
+  box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.35),
+              -6px -6px 12px rgba(255, 255, 255, 0.95),
+              inset 2px 2px 3px rgba(255, 255, 255, 0.8),
               inset -2px -2px 3px rgba(163, 177, 198, 0.15);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -194,7 +194,7 @@ body {
 .clay-filter-btn.active {
   background: #4f46e5;
   color: #ffffff;
-  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.25), 
+  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.25),
               inset -2px -2px 4px rgba(255, 255, 255, 0.4),
               4px 4px 10px rgba(79, 70, 229, 0.35);
   border-color: transparent;
@@ -224,9 +224,9 @@ body {
   height: 56px;
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 6px 6px 14px rgba(163, 177, 198, 0.45), 
-              -4px -4px 10px rgba(255, 255, 255, 0.9), 
-              inset 2px 2px 4px rgba(255, 255, 255, 0.9), 
+  box-shadow: 6px 6px 14px rgba(163, 177, 198, 0.45),
+              -4px -4px 10px rgba(255, 255, 255, 0.9),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.9),
               inset -2px -2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
@@ -267,9 +267,9 @@ body {
 /* Clay 3D Sphere */
 .clay-sphere {
   border-radius: 50%;
-  box-shadow: 12px 12px 24px rgba(163, 177, 198, 0.5), 
-              -12px -12px 24px rgba(255, 255, 255, 1), 
-              inset 6px 6px 12px rgba(255, 255, 255, 0.9), 
+  box-shadow: 12px 12px 24px rgba(163, 177, 198, 0.5),
+              -12px -12px 24px rgba(255, 255, 255, 1),
+              inset 6px 6px 12px rgba(255, 255, 255, 0.9),
               inset -6px -6px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -280,7 +280,7 @@ input[type="range"].clay-slider {
   background: #e2ebf5;
   height: 12px;
   border-radius: 8px;
-  box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.4), 
+  box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.4),
               inset -2px -2px 5px rgba(255, 255, 255, 0.9);
   outline: none;
 }
@@ -292,8 +292,8 @@ input[type="range"].clay-slider::-webkit-slider-thumb {
   height: 26px;
   border-radius: 50%;
   background: #4f46e5;
-  box-shadow: 3px 3px 6px rgba(79, 70, 229, 0.4), 
-              inset 2px 2px 4px rgba(255, 255, 255, 0.6), 
+  box-shadow: 3px 3px 6px rgba(79, 70, 229, 0.4),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.6),
               inset -2px -2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -314,4 +314,149 @@ input[type="range"].clay-slider::-webkit-slider-thumb:hover {
   background: #c3d2e5;
   border-radius: 10px;
   border: 2px solid #e8f0f8;
+}
+
+/* =========================================================
+   Chatbot (MathClay AI ?섑븰 ?쒗꽣) Claymorphism Styles
+   ========================================================= */
+.clay-chat-fab {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+  border-radius: 9999px;
+  box-shadow: 8px 10px 24px rgba(99, 102, 241, 0.45),
+              -4px -4px 12px rgba(255, 255, 255, 0.6),
+              inset 3px 3px 6px rgba(255, 255, 255, 0.6),
+              inset -3px -3px 6px rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.clay-chat-fab:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 12px 16px 30px rgba(99, 102, 241, 0.55),
+              -5px -5px 15px rgba(255, 255, 255, 0.7);
+}
+
+.clay-chat-fab:active {
+  transform: scale(0.95);
+}
+
+.clay-chat-window {
+  background: rgba(240, 244, 249, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  box-shadow: 18px 22px 45px rgba(163, 177, 198, 0.55),
+              -12px -12px 30px rgba(255, 255, 255, 0.95),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+              inset -2px -2px 4px rgba(163, 177, 198, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  animation: chatSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes chatSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.chat-bubble-user {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  border-radius: 20px 20px 4px 20px;
+  box-shadow: 4px 6px 14px rgba(79, 70, 229, 0.3),
+              inset 1px 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.chat-bubble-bot {
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 20px 20px 20px 4px;
+  box-shadow: 6px 8px 18px rgba(163, 177, 198, 0.3),
+              -3px -3px 8px rgba(255, 255, 255, 0.9),
+              inset 1px 1px 2px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+/* Typing bounce dots */
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  background: #6366f1;
+  border-radius: 50%;
+  display: inline-block;
+  animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Quick Question Chip */
+.chat-chip {
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  box-shadow: 2px 3px 8px rgba(163, 177, 198, 0.25),
+              -2px -2px 6px rgba(255, 255, 255, 0.8);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  padding: 0.4rem 0.85rem;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chat-chip:hover {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  color: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 4px 5px 12px rgba(99, 102, 241, 0.25);
+}
+
+/* KaTeX styling inside chat messages */
+.chat-bubble-bot .katex-display {
+  margin: 0.6em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.3em 0;
+}
+
+.chat-bubble-bot .katex {
+  font-size: 1.05em;
+  line-height: 1.2;
+}
+
+.chat-bubble-bot p {
+  margin-bottom: 0.5rem;
+}
+
+.chat-bubble-bot p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-bubble-bot ul, .chat-bubble-bot ol {
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-bubble-bot strong {
+  color: #0f172a;
 }

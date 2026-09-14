@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MathClay 중학수학 - 중학교 수학교사를 위한 인터랙티브 시뮬레이션 랩</title>
-  <meta name="description" content="중학교 1~3학년 수학 교육과정 전용 인터랙티브 시뮬레이션 플랫폼. 일차함수, 피타고라스 정리, 삼각비, 확률과 통계를 전자칠판과 태블릿에서 직접 조작하며 수업하세요." />
+  <title>MathClay 以묓븰?섑븰 - 以묓븰援??섑븰援먯궗瑜??꾪븳 ?명꽣?숉떚釉??쒕??덉씠????/title>
+  <meta name="description" content="以묓븰援?1~3?숇뀈 ?섑븰 援먯쑁怨쇱젙 ?꾩슜 ?명꽣?숉떚釉??쒕??덉씠???뚮옯?? ?쇱감?⑥닔, ?쇳?怨좊씪???뺣━, ?쇨컖鍮? ?뺣쪧怨??듦퀎瑜??꾩옄移좏뙋怨??쒕툝由우뿉??吏곸젒 議곗옉?섎ŉ ?섏뾽?섏꽭??" />
 
   <!-- Google Fonts & Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -35,6 +35,11 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- KaTeX for Beautiful Math Formula Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
   <!-- Custom Claymorphism Stylesheet -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -46,7 +51,7 @@
   <div class="fixed top-1/2 left-4 w-10 h-10 rounded-full bg-gradient-to-tr from-amber-300 to-orange-200 clay-sphere pointer-events-none opacity-30 animate-pulse-soft z-0"></div>
 
   <!-- =========================================================
-       1. TOP NAVIGATION BAR (중학교 수학교사용 스티키 네비게이션)
+       1. TOP NAVIGATION BAR (以묓븰援??섑븰援먯궗???ㅽ떚???ㅻ퉬寃뚯씠??
        ========================================================= -->
   <header class="sticky top-4 z-50 px-4 sm:px-8 max-w-7xl mx-auto">
     <nav class="clay-nav px-5 py-3.5 flex items-center justify-between transition-all">
@@ -57,31 +62,31 @@
         </div>
         <div class="flex flex-col">
           <div class="flex items-center gap-1.5">
-            <span class="text-xl font-black tracking-tight text-slate-900">MathClay <span class="text-indigo-600">중학수학</span></span>
-            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 tracking-wider">교사용</span>
+            <span class="text-xl font-black tracking-tight text-slate-900">MathClay <span class="text-indigo-600">以묓븰?섑븰</span></span>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 tracking-wider">援먯궗??/span>
           </div>
-          <span class="text-[11px] font-medium text-slate-500 hidden sm:inline">중1~중3 인터랙티브 수업 교구 랩</span>
+          <span class="text-[11px] font-medium text-slate-500 hidden sm:inline">以?~以? ?명꽣?숉떚釉??섏뾽 援먭뎄 ??/span>
         </div>
       </a>
 
-      <!-- Desktop Nav Menu: 중1, 중2, 중3 학년별 바로가기 -->
+      <!-- Desktop Nav Menu: 以?, 以?, 以? ?숇뀈蹂?諛붾줈媛湲?-->
       <ul class="hidden md:flex items-center gap-1 lg:gap-2 text-sm font-bold text-slate-600">
-        <li><a href="#hero" class="px-3.5 py-2 rounded-full hover:text-indigo-600 hover:bg-white/60 transition-all duration-200">홈</a></li>
-        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-3 py-2 rounded-full hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>중1 과정</a></li>
-        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-3 py-2 rounded-full hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span>중2 과정</a></li>
-        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade3]').click()" class="px-3 py-2 rounded-full hover:text-purple-700 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span>중3 과정</a></li>
-        <li><a href="#teachertips" class="px-3.5 py-2 rounded-full hover:text-indigo-600 hover:bg-white/60 transition-all duration-200">수업 활용팁</a></li>
+        <li><a href="#hero" class="px-3.5 py-2 rounded-full hover:text-indigo-600 hover:bg-white/60 transition-all duration-200">??/a></li>
+        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-3 py-2 rounded-full hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>以? 怨쇱젙</a></li>
+        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-3 py-2 rounded-full hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span>以? 怨쇱젙</a></li>
+        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade3]').click()" class="px-3 py-2 rounded-full hover:text-purple-700 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span>以? 怨쇱젙</a></li>
+        <li><a href="#teachertips" class="px-3.5 py-2 rounded-full hover:text-indigo-600 hover:bg-white/60 transition-all duration-200">?섏뾽 ?쒖슜??/a></li>
       </ul>
 
       <!-- Search & CTA Actions -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Sunken Clay Search Bar (중학교 단원 검색) -->
+        <!-- Sunken Clay Search Bar (以묓븰援??⑥썝 寃?? -->
         <div class="hidden lg:flex items-center clay-inset px-3.5 py-1.5 w-60">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
-          <input 
-            type="text" 
-            id="simSearchInput" 
-            placeholder="기울기, 피타고라스, 삼각비..." 
+          <input
+            type="text"
+            id="simSearchInput"
+            placeholder="湲곗슱湲? ?쇳?怨좊씪?? ?쇨컖鍮?.."
             class="bg-transparent text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none w-full"
           />
           <kbd class="hidden xl:inline-block text-[10px] bg-white/70 text-slate-500 font-bold px-1.5 py-0.5 rounded shadow-sm">Ctrl K</kbd>
@@ -90,23 +95,28 @@
         <!-- Supabase Settings Shortcut Button in Navigation Bar -->
         <button id="navSupabaseBtn" class="clay-btn clay-btn-secondary text-xs sm:text-sm px-3.5 py-2 text-emerald-800 bg-emerald-50 border border-emerald-300 font-bold flex items-center gap-1.5 shadow-sm hover:bg-emerald-100 transition-colors">
           <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
-          <span>⚙️ Supabase 설정</span>
+          <span>?숋툘 Supabase ?ㅼ젙</span>
+        </button>
+
+        <!-- AI Math Tutor Shortcut Button in Navigation Bar -->
+        <button id="navAiTutorBtn" class="clay-btn clay-btn-primary text-xs sm:text-sm px-3.5 py-2 font-bold flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+          <span>?쨼 AI ?섑븰 ?쒗꽣</span>
         </button>
 
         <!-- Submit Tip Button -->
         <a href="#teachertips" class="hidden sm:inline-flex clay-btn clay-btn-secondary text-xs sm:text-sm px-4 py-2 text-slate-700 font-medium">
           <i data-lucide="book-open-check" class="w-4 h-4 mr-1.5 text-indigo-600"></i>
-          수업 팁
-        </a>
+          ?섏뾽 ??        </a>
 
         <!-- Main Action Button -->
         <a href="#simulations" class="clay-btn clay-btn-primary text-xs sm:text-sm px-4 sm:px-5 py-2 font-semibold">
-          <span>교구 모음</span>
+          <span>援먭뎄 紐⑥쓬</span>
           <i data-lucide="sparkles" class="w-3.5 h-3.5 ml-1.5"></i>
         </a>
 
         <!-- Mobile Hamburger Button -->
-        <button id="mobileMenuToggle" class="md:hidden clay-btn clay-btn-secondary p-2.5 text-slate-600 focus:outline-none" aria-label="메뉴 열기">
+        <button id="mobileMenuToggle" class="md:hidden clay-btn clay-btn-secondary p-2.5 text-slate-600 focus:outline-none" aria-label="硫붾돱 ?닿린">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
       </div>
@@ -116,74 +126,80 @@
     <div id="mobileMenuDrawer" class="hidden md:hidden mt-3 clay-card p-5 space-y-4">
       <div class="clay-inset flex items-center px-4 py-2.5">
         <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
-        <input type="text" placeholder="단원 키워드 검색..." class="bg-transparent text-sm w-full outline-none text-slate-700" />
+        <input type="text" placeholder="?⑥썝 ?ㅼ썙??寃??.." class="bg-transparent text-sm w-full outline-none text-slate-700" />
       </div>
       <div class="flex flex-col space-y-2 text-sm font-semibold text-slate-600">
+        <button onclick="MathClayChat.openChat(); document.getElementById('mobileMenuDrawer').classList.add('hidden');" class="clay-btn clay-btn-primary py-2.5 px-4 text-left font-bold flex items-center gap-2">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+          <span>?쨼 AI ?섑븰 ?쒗꽣 梨쀫큸 ?닿린</span>
+        </button>
         <button id="mobileNavSupabaseBtn" class="clay-btn clay-btn-secondary py-2.5 px-4 text-left text-emerald-800 bg-emerald-50 border border-emerald-300 font-bold flex items-center gap-2">
           <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
-          <span>⚙️ Supabase DB 설정 바로가기</span>
+          <span>?숋툘 Supabase DB ?ㅼ젙 諛붾줈媛湲?/span>
         </button>
-        <a href="#hero" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">홈</a>
-        <a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-4 py-2.5 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition">중1 시뮬레이션</a>
-        <a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-4 py-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition">중2 시뮬레이션</a>
-        <a href="#simulations" onclick="document.querySelector('[data-filter=grade3]').click()" class="px-4 py-2.5 rounded-xl hover:bg-purple-50 hover:text-purple-700 transition">중3 시뮬레이션</a>
-        <a href="#teachertips" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">수업 활용팁</a>
+        <a href="#hero" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">??/a>
+        <a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-4 py-2.5 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition">以? ?쒕??덉씠??/a>
+        <a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-4 py-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition">以? ?쒕??덉씠??/a>
+        <a href="#simulations" onclick="document.querySelector('[data-filter=grade3]').click()" class="px-4 py-2.5 rounded-xl hover:bg-purple-50 hover:text-purple-700 transition">以? ?쒕??덉씠??/a>
+        <a href="#teachertips" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">?섏뾽 ?쒖슜??/a>
       </div>
     </div>
   </header>
 
 
   <!-- =========================================================
-       2. HERO SECTION (중학교 수학교사 맞춤형 히어로)
+       2. HERO SECTION (以묓븰援??섑븰援먯궗 留욎땄???덉뼱濡?
        ========================================================= -->
   <main id="hero" class="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-14 pb-14 z-10">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-      
+
       <!-- Hero Left: Teacher-Focused Copy -->
       <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
         <!-- Floating Announcement Pill -->
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 clay-badge text-xs sm:text-sm font-bold text-indigo-800">
           <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-          <span>🏫 전국 중학교 수학 수업 맞춤형 인터랙티브 교구</span>
+          <span>?룶 ?꾧뎅 以묓븰援??섑븰 ?섏뾽 留욎땄???명꽣?숉떚釉?援먭뎄</span>
         </div>
 
         <!-- Main Headline -->
         <h1 class="text-3xl sm:text-5xl lg:text-5xl font-black text-slate-900 leading-tight tracking-tight">
-          칠판 판서 대신<br />
+          移좏뙋 ?먯꽌 ???br />
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-600 to-emerald-600">
-            손으로 직접 움직이는
-          </span><br />
-          중학교 수학 수업
+            ?먯쑝濡?吏곸젒 ?吏곸씠??          </span><br />
+          以묓븰援??섑븰 ?섏뾽
         </h1>
 
         <!-- Subtitle -->
         <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium">
-          선생님의 수업 시간 설명 고민을 덜어드립니다! 
-          <strong>일차함수 기울기</strong>, <strong>피타고라스 정리</strong>, <strong>삼각비</strong>, <strong>주사위 확률</strong>까지 
-          학생들의 눈높이에 맞춘 인터랙티브 시뮬레이터를 스마트TV 전자칠판과 태블릿에서 바로 조작해보세요.
+          ?좎깮?섏쓽 ?섏뾽 ?쒓컙 ?ㅻ챸 怨좊????쒖뼱?쒕┰?덈떎!
+          <strong>?쇱감?⑥닔 湲곗슱湲?/strong>, <strong>?쇳?怨좊씪???뺣━</strong>, <strong>?쇨컖鍮?/strong>, <strong>二쇱궗???뺣쪧</strong>源뚯?
+          ?숈깮?ㅼ쓽 ?덈넂?댁뿉 留욎텣 ?명꽣?숉떚釉??쒕??덉씠?곕? ?ㅻ쭏?퇤V ?꾩옄移좏뙋怨??쒕툝由우뿉??諛붾줈 議곗옉?대낫?몄슂.
         </p>
 
         <!-- CTA Buttons -->
-        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-          <a href="#simulations" class="clay-btn clay-btn-primary px-7 py-3.5 text-base font-bold text-white shadow-lg">
+        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
+          <a href="#simulations" class="clay-btn clay-btn-primary px-6 sm:px-7 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg">
             <i data-lucide="compass" class="w-5 h-5 mr-2"></i>
-            중학 교구 모아보기
+            以묓븰 援먭뎄 紐⑥븘蹂닿린
           </a>
-          <a href="#diceSection" class="clay-btn clay-btn-secondary px-6 py-3.5 text-base font-semibold text-slate-700">
+          <button onclick="MathClayChat.openChat()" class="clay-btn clay-btn-secondary px-5 sm:px-6 py-3.5 text-sm sm:text-base font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-2">
+            <i data-lucide="bot" class="w-5 h-5 text-indigo-600"></i>
+            AI ?섑븰 吏덈Ц?섍린
+          </button>
+          <a href="#diceSection" class="clay-btn clay-btn-secondary px-5 sm:px-6 py-3.5 text-sm sm:text-base font-semibold text-slate-700">
             <i data-lucide="dices" class="w-5 h-5 mr-2 text-indigo-600"></i>
-            중2 확률 실험실
-          </a>
+            以? ?뺣쪧 ?ㅽ뿕??          </a>
         </div>
 
         <!-- Grade Badges Row -->
         <div class="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-xs font-bold">
-          <span class="px-3 py-1.5 rounded-full badge-grade-1 clay-badge">🌱 중1: 소인수분해 · 회전체</span>
-          <span class="px-3 py-1.5 rounded-full badge-grade-2 clay-badge">🌿 중2: 일차함수 · 피타고라스 · 확률</span>
-          <span class="px-3 py-1.5 rounded-full badge-grade-3 clay-badge">🌳 중3: 삼각비 · 이차함수 · 산점도</span>
+          <span class="px-3 py-1.5 rounded-full badge-grade-1 clay-badge">?뙮 以?: ?뚯씤?섎텇??쨌 ?뚯쟾泥?/span>
+          <span class="px-3 py-1.5 rounded-full badge-grade-2 clay-badge">?뙼 以?: ?쇱감?⑥닔 쨌 ?쇳?怨좊씪??쨌 ?뺣쪧</span>
+          <span class="px-3 py-1.5 rounded-full badge-grade-3 clay-badge">?뙰 以?: ?쇨컖鍮?쨌 ?댁감?⑥닔 쨌 ?곗젏??/span>
         </div>
       </div>
 
-      <!-- Hero Right: Live Interactive Linear Function Canvas (중2 일차함수 실시간 조작기) -->
+      <!-- Hero Right: Live Interactive Linear Function Canvas (以? ?쇱감?⑥닔 ?ㅼ떆媛?議곗옉湲? -->
       <div class="lg:col-span-6">
         <div class="clay-card p-6 sm:p-7 relative overflow-hidden">
           <!-- Card Header Bar -->
@@ -194,8 +210,7 @@
               <span class="w-3 h-3 rounded-full bg-emerald-400 shadow-inner"></span>
               <span class="ml-2 text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
                 <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i>
-                [중2 함수] 일차함수 기울기와 y절편 탐구기
-              </span>
+                [以? ?⑥닔] ?쇱감?⑥닔 湲곗슱湲곗? y?덊렪 ?먭뎄湲?              </span>
             </div>
             <span id="functionFormula" class="text-sm font-mono font-black bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full clay-badge border border-indigo-200">
               y = x
@@ -206,22 +221,22 @@
           <div class="my-4 w-full h-[220px] sm:h-[240px] rounded-2xl bg-white clay-inset flex items-center justify-center overflow-hidden p-1 relative">
             <canvas id="heroCanvas" class="w-full h-full block"></canvas>
             <div class="absolute bottom-2 right-2 text-[10px] text-slate-400 font-mono bg-white/80 px-2 py-0.5 rounded">
-              단위: 1칸 = 1
+              ?⑥쐞: 1移?= 1
             </div>
           </div>
 
           <!-- Controls: Slope (a) and Intercept (b) Sliders -->
           <div class="space-y-3 pt-1">
-            <!-- a (기울기) -->
+            <!-- a (湲곗슱湲? -->
             <div class="flex items-center gap-3 text-xs font-bold text-slate-700">
-              <span class="w-20">기울기 (a)</span>
+              <span class="w-20">湲곗슱湲?(a)</span>
               <input type="range" id="slopeSlider" min="-3" max="3" step="0.25" value="1" class="clay-slider flex-1" />
               <span id="slopeValueText" class="w-16 text-right font-mono text-indigo-600 font-bold">a = 1.0</span>
             </div>
 
-            <!-- b (y절편) -->
+            <!-- b (y?덊렪) -->
             <div class="flex items-center gap-3 text-xs font-bold text-slate-700">
-              <span class="w-20">y절편 (b)</span>
+              <span class="w-20">y?덊렪 (b)</span>
               <input type="range" id="interceptSlider" min="-4" max="4" step="0.5" value="0" class="clay-slider flex-1" />
               <span id="interceptValueText" class="w-16 text-right font-mono text-rose-600 font-bold">b = 0.0</span>
             </div>
@@ -230,11 +245,11 @@
             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
               <button id="autoAnimateBtn" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1 text-slate-700 hover:bg-indigo-50">
                 <i data-lucide="play" class="w-3.5 h-3.5 text-indigo-600"></i>
-                기울기 변화 자동 시연
+                湲곗슱湲?蹂???먮룞 ?쒖뿰
               </button>
               <div class="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-600"></span>Δx 밑변</span>
-                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-600"></span>Δy 높이</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-600"></span>?x 諛묐?</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-600"></span>?y ?믪씠</span>
               </div>
             </div>
           </div>
@@ -246,40 +261,38 @@
 
 
   <!-- =========================================================
-       3. GRADE & DOMAIN FILTER SECTION (학년/영역 필터)
+       3. GRADE & DOMAIN FILTER SECTION (?숇뀈/?곸뿭 ?꾪꽣)
        ========================================================= -->
   <section id="simulations" class="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4">
     <div class="text-center max-w-2xl mx-auto mb-8 space-y-3">
       <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-        중학교 1~3학년 교육과정 시뮬레이션
-      </h2>
+        以묓븰援?1~3?숇뀈 援먯쑁怨쇱젙 ?쒕??덉씠??      </h2>
       <p class="text-sm sm:text-base text-slate-600">
-        카드를 클릭하면 <strong>실시간 조작 시뮬레이터 스튜디오</strong>가 열려 직접 슬라이더와 버튼으로 실험할 수 있습니다.
+        移대뱶瑜??대┃?섎㈃ <strong>?ㅼ떆媛?議곗옉 ?쒕??덉씠???ㅽ뒠?붿삤</strong>媛 ?대젮 吏곸젒 ?щ씪?대뜑? 踰꾪듉?쇰줈 ?ㅽ뿕?????덉뒿?덈떎.
       </p>
     </div>
 
     <!-- Grade & Domain Filter Buttons -->
     <div class="flex items-center justify-center flex-wrap gap-2.5 sm:gap-3 py-2">
       <button class="clay-filter-btn active" data-filter="all">
-        전체 보기 (8)
+        ?꾩껜 蹂닿린 (8)
       </button>
       <button class="clay-filter-btn" data-filter="grade1">
-        🌱 중1 과정
+        ?뙮 以? 怨쇱젙
       </button>
       <button class="clay-filter-btn" data-filter="grade2">
-        🌿 중2 과정
+        ?뙼 以? 怨쇱젙
       </button>
       <button class="clay-filter-btn" data-filter="grade3">
-        🌳 중3 과정
+        ?뙰 以? 怨쇱젙
       </button>
       <button class="clay-filter-btn" data-filter="geometry">
-        📐 기하 (도형)
+        ?뱪 湲고븯 (?꾪삎)
       </button>
       <button class="clay-filter-btn" data-filter="function">
-        📈 함수 & 그래프
-      </button>
+        ?뱢 ?⑥닔 & 洹몃옒??      </button>
       <button class="clay-filter-btn" data-filter="probability">
-        🎲 확률 & 통계
+        ?렡 ?뺣쪧 & ?듦퀎
       </button>
     </div>
   </section>
@@ -291,47 +304,47 @@
   <section class="max-w-7xl mx-auto px-4 sm:px-8 py-6">
     <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-      <!-- Card 1: [중2 기하] 피타고라스 정리 물 채우기 증명 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="geometry" data-tags="피타고라스 직각삼각형 빗변 기하 중2 물 증명">
+      <!-- Card 1: [以? 湲고븯] ?쇳?怨좊씪???뺣━ 臾?梨꾩슦湲?利앸챸 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="geometry" data-tags="?쇳?怨좊씪??吏곴컖?쇨컖??鍮쀫? 湲고븯 以? 臾?利앸챸">
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-blue-200 group-hover:to-indigo-300 transition-colors">
             <div class="relative w-28 h-28 flex items-center justify-center">
-              <div class="absolute w-10 h-10 bg-cyan-500/85 rounded-lg shadow-md -left-1 bottom-1 transform -rotate-12 flex items-center justify-center text-white font-mono text-[10px] font-bold">a²</div>
-              <div class="absolute w-12 h-12 bg-indigo-500/85 rounded-lg shadow-md right-1 bottom-1 transform rotate-6 flex items-center justify-center text-white font-mono text-[10px] font-bold">b²</div>
-              <div class="absolute w-16 h-16 bg-purple-500/85 rounded-xl shadow-lg -top-1 px-2 py-2 flex items-center justify-center text-white font-mono text-xs font-black border-2 border-white/80">c²</div>
+              <div class="absolute w-10 h-10 bg-cyan-500/85 rounded-lg shadow-md -left-1 bottom-1 transform -rotate-12 flex items-center justify-center text-white font-mono text-[10px] font-bold">a짼</div>
+              <div class="absolute w-12 h-12 bg-indigo-500/85 rounded-lg shadow-md right-1 bottom-1 transform rotate-6 flex items-center justify-center text-white font-mono text-[10px] font-bold">b짼</div>
+              <div class="absolute w-16 h-16 bg-purple-500/85 rounded-xl shadow-lg -top-1 px-2 py-2 flex items-center justify-center text-white font-mono text-xs font-black border-2 border-white/80">c짼</div>
             </div>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-2">
-              중2-2 기하
+              以?-2 湲고븯
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-indigo-600">a² + b² = c²</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">도형의 닮음과 피타고라스</span>
+              <span class="font-mono font-bold text-indigo-600">a짼 + b짼 = c짼</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?꾪삎????쓬怨??쇳?怨좊씪??/span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              피타고라스 정리: 물 채우기 증명
+              ?쇳?怨좊씪???뺣━: 臾?梨꾩슦湲?利앸챸
             </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              직각삼각형의 두 변에 세운 정사각형 액체가 회전하면서 빗변의 정사각형을 정확히 채우는 넓이 보존 시뮬레이션.
+              吏곴컖?쇨컖?뺤쓽 ??蹂???몄슫 ?뺤궗媛곹삎 ?≪껜媛 ?뚯쟾?섎㈃??鍮쀫????뺤궗媛곹삎???뺥솗??梨꾩슦???볦씠 蹂댁〈 ?쒕??덉씠??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 議곗옉
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="pythagoras">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 2: [중2 함수] 일차함수 y = ax + b 기울기와 절편 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="function" data-tags="일차함수 기울기 절편 함수 중2 좌표평면 직선">
+      <!-- Card 2: [以? ?⑥닔] ?쇱감?⑥닔 y = ax + b 湲곗슱湲곗? ?덊렪 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="function" data-tags="?쇱감?⑥닔 湲곗슱湲??덊렪 ?⑥닔 以? 醫뚰몴?됰㈃ 吏곸꽑">
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-indigo-100 to-sky-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-indigo-200 group-hover:to-sky-300 transition-colors">
             <svg class="w-32 h-24 text-indigo-600" viewBox="0 0 100 80" fill="none">
@@ -342,75 +355,73 @@
               <rect x="50" y="30" width="20" height="10" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2" fill="none" />
             </svg>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-2">
-              중2-1 함수
+              以?-1 ?⑥닔
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
               <span class="font-mono font-bold text-indigo-600">y = ax + b</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">일차함수와 그래프</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?쇱감?⑥닔? 洹몃옒??/span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              일차함수 기울기 & 절편 탐구기
-            </h3>
+              ?쇱감?⑥닔 湲곗슱湲?& ?덊렪 ?먭뎄湲?            </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              기울기 a의 부호와 절댓값에 따른 경사도 변화와 y절편 b에 따른 평행이동을 실시간 좌표평면에서 조작합니다.
+              湲곗슱湲?a??遺?몄? ?덈뙎媛믪뿉 ?곕Ⅸ 寃쎌궗??蹂?붿? y?덊렪 b???곕Ⅸ ?됲뻾?대룞???ㅼ떆媛?醫뚰몴?됰㈃?먯꽌 議곗옉?⑸땲??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 議곗옉
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="linear">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 3: [중3 기하] 삼각비(sin, cos, tan)와 직각삼각형 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="geometry" data-tags="삼각비 싸인 코사인 탄젠트 기하 중3 직각삼각형 특수각">
+      <!-- Card 3: [以? 湲고븯] ?쇨컖鍮?sin, cos, tan)? 吏곴컖?쇨컖??-->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="geometry" data-tags="?쇨컖鍮??몄씤 肄붿궗???꾩젨??湲고븯 以? 吏곴컖?쇨컖???뱀닔媛?>
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-purple-200 group-hover:to-pink-300 transition-colors">
             <div class="text-center font-serif text-purple-700 font-black">
-              <div class="text-2xl tracking-widest">sin · cos · tan</div>
-              <div class="text-xs font-mono font-semibold text-purple-500 mt-1">30° · 45° · 60°</div>
+              <div class="text-2xl tracking-widest">sin 쨌 cos 쨌 tan</div>
+              <div class="text-xs font-mono font-semibold text-purple-500 mt-1">30째 쨌 45째 쨌 60째</div>
             </div>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-3">
-              중3-2 기하
+              以?-2 湲고븯
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-purple-600">닮음비의 불변성</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">삼각비 단원</span>
+              <span class="font-mono font-bold text-purple-600">??쓬鍮꾩쓽 遺덈???/span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?쇨컖鍮??⑥썝</span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              삼각비와 직각삼각형 닮음 측정기
-            </h3>
+              ?쇨컖鍮꾩? 吏곴컖?쇨컖????쓬 痢≪젙湲?            </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              삼각형의 크기가 달라져도 각도가 일정하면 세 변의 길이의 비는 변하지 않음을 시각적으로 확인합니다.
+              ?쇨컖?뺤쓽 ?ш린媛 ?щ씪?몃룄 媛곷룄媛 ?쇱젙?섎㈃ ??蹂??湲몄씠??鍮꾨뒗 蹂?섏? ?딆쓬???쒓컖?곸쑝濡??뺤씤?⑸땲??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 議곗옉
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="trig">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 4: [중3 함수] 이차함수 y = a(x - p)² + q 포물선 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="function" data-tags="이차함수 포물선 꼭짓점 축 대칭 함수 중3">
+      <!-- Card 4: [以? ?⑥닔] ?댁감?⑥닔 y = a(x - p)짼 + q ?щЪ??-->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="function" data-tags="?댁감?⑥닔 ?щЪ??瑗?쭞??異??移??⑥닔 以?">
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-amber-100 to-rose-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-amber-200 group-hover:to-rose-300 transition-colors">
             <svg class="w-32 h-24 text-rose-600" viewBox="0 0 100 80" fill="none">
@@ -419,76 +430,76 @@
               <line x1="50" y1="10" x2="50" y2="70" stroke="#94a3b8" stroke-dasharray="2 2" />
             </svg>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-3">
-              중3-1 함수
+              以?-1 ?⑥닔
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-rose-600">(p, q) 꼭짓점</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">이차함수와 그래프</span>
+              <span class="font-mono font-bold text-rose-600">(p, q) 瑗?쭞??/span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?댁감?⑥닔? 洹몃옒??/span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              이차함수 포물선과 꼭짓점 이동
+              ?댁감?⑥닔 ?щЪ?좉낵 瑗?쭞???대룞
             </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              기본형 y = ax²의 폭과 모양, x축 p만큼, y축 q만큼 평행이동한 표준형의 꼭짓점 이동을 농구 슛 궤적으로 탐구합니다.
+              湲곕낯??y = ax짼????낵 紐⑥뼇, x異?p留뚰겮, y異?q留뚰겮 ?됲뻾?대룞???쒖??뺤쓽 瑗?쭞???대룞???띻뎄 ??沅ㅼ쟻?쇰줈 ?먭뎄?⑸땲??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 議곗옉
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="quadratic">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 5: [중1 기하] 입체도형 회전체와 전개도 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade1" data-domain="geometry" data-tags="입체도형 회전체 원기둥 원뿔 구 전개도 중1 기하 겉넓이 부피">
+      <!-- Card 5: [以? 湲고븯] ?낆껜?꾪삎 ?뚯쟾泥댁? ?꾧컻??-->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade1" data-domain="geometry" data-tags="?낆껜?꾪삎 ?뚯쟾泥??먭린???먮퓭 援??꾧컻??以? 湲고븯 寃됰꼻??遺??>
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-emerald-200 group-hover:to-teal-300 transition-colors">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-14 border-2 border-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold text-emerald-800">원기둥</div>
-              <div class="w-10 h-14 border-2 border-teal-600 rounded-t-full flex items-center justify-center text-[10px] font-bold text-teal-800">원뿔</div>
-              <div class="w-11 h-11 border-2 border-cyan-600 rounded-full flex items-center justify-center text-[10px] font-bold text-cyan-800">구</div>
+              <div class="w-10 h-14 border-2 border-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold text-emerald-800">?먭린??/div>
+              <div class="w-10 h-14 border-2 border-teal-600 rounded-t-full flex items-center justify-center text-[10px] font-bold text-teal-800">?먮퓭</div>
+              <div class="w-11 h-11 border-2 border-cyan-600 rounded-full flex items-center justify-center text-[10px] font-bold text-cyan-800">援?/div>
             </div>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-1">
-              중1-2 기하
+              以?-2 湲고븯
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-emerald-600">부피비 1 : 2 : 3</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">입체도형의 성질</span>
+              <span class="font-mono font-bold text-emerald-600">遺?쇰퉬 1 : 2 : 3</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?낆껜?꾪삎???깆쭏</span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              입체도형 회전체와 전개도 실험
+              ?낆껜?꾪삎 ?뚯쟾泥댁? ?꾧컻???ㅽ뿕
             </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              평면도형을 회전축 중심으로 1회전 시켰을 때 생기는 회전체와 단면을 자르고, 360° 회전시키는 공간 지각 시뮬레이션.
+              ?됰㈃?꾪삎???뚯쟾異?以묒떖?쇰줈 1?뚯쟾 ?쒖섟?????앷린???뚯쟾泥댁? ?⑤㈃???먮Ⅴ怨? 360째 ?뚯쟾?쒗궎??怨듦컙 吏媛??쒕??덉씠??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 議곗옉
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="solid">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 6: [중2 기하] 삼각형의 외심과 내심 작도기 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="geometry" data-tags="외심 내심 삼각형 외접원 내접원 기하 중2 수직이등분선">
+      <!-- Card 6: [以? 湲고븯] ?쇨컖?뺤쓽 ?몄떖怨??댁떖 ?묐룄湲?-->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="geometry" data-tags="?몄떖 ?댁떖 ?쇨컖???몄젒???댁젒??湲고븯 以? ?섏쭅?대벑遺꾩꽑">
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-cyan-100 to-blue-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-cyan-200 group-hover:to-blue-300 transition-colors">
             <div class="relative w-24 h-24 flex items-center justify-center">
@@ -498,37 +509,35 @@
               </div>
             </div>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-2">
-              중2-2 기하
+              以?-2 湲고븯
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-blue-600">외심 & 내심</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">삼각형의 성질</span>
+              <span class="font-mono font-bold text-blue-600">?몄떖 & ?댁떖</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?쇨컖?뺤쓽 ?깆쭏</span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              삼각형의 외심과 내심 실시간 작도기
-            </h3>
+              ?쇨컖?뺤쓽 ?몄떖怨??댁떖 ?ㅼ떆媛??묐룄湲?            </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              삼각형 꼭짓점을 직접 드래그하여 예각·직각·둔각으로 변형할 때, 외심과 내심 위치의 변화를 실시간으로 비교합니다.
+              ?쇨컖??瑗?쭞?먯쓣 吏곸젒 ?쒕옒洹명븯???덇컖쨌吏곴컖쨌?붽컖?쇰줈 蹂?뺥븷 ?? ?몄떖怨??댁떖 ?꾩튂??蹂?붾? ?ㅼ떆媛꾩쑝濡?鍮꾧탳?⑸땲??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 꼭짓점 드래그
-          </span>
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 瑗?쭞???쒕옒洹?          </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="incenter">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 7: [중1 수와 연산] 에라토스테네스의 체 & 소인수분해 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade1" data-domain="number" data-tags="소수 소인수분해 에라토스테네스의체 거듭제곱 수와연산 중1">
+      <!-- Card 7: [以? ?섏? ?곗궛] ?먮씪?좎뒪?뚮꽕?ㅼ쓽 泥?& ?뚯씤?섎텇??-->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade1" data-domain="number" data-tags="?뚯닔 ?뚯씤?섎텇???먮씪?좎뒪?뚮꽕?ㅼ쓽泥?嫄곕벊?쒓낢 ?섏??곗궛 以?">
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-emerald-100 to-lime-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-emerald-200 group-hover:to-lime-300 transition-colors">
             <div class="grid grid-cols-5 gap-1 text-[11px] font-bold text-center">
@@ -539,37 +548,36 @@
               <span class="w-5 h-5 rounded bg-slate-200 text-slate-400 line-through flex items-center justify-center">6</span>
             </div>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-1">
-              중1-1 수와 연산
+              以?-1 ?섏? ?곗궛
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-emerald-600">소수와 합성수</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">소인수분해</span>
+              <span class="font-mono font-bold text-emerald-600">?뚯닔? ?⑹꽦??/span>
+              <span class="sim-curriculum text-slate-400 font-semibold">?뚯씤?섎텇??/span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              에라토스테네스의 체 & 소인수분해
-            </h3>
+              ?먮씪?좎뒪?뚮꽕?ㅼ쓽 泥?& ?뚯씤?섎텇??            </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              버튼을 눌러 배수를 하나씩 지워가며 100 이하의 소수를 찾아내는 애니메이션 교구.
+              踰꾪듉???뚮윭 諛곗닔瑜??섎굹??吏?뚭?硫?100 ?댄븯???뚯닔瑜?李얠븘?대뒗 ?좊땲硫붿씠??援먭뎄.
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 지우기
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 吏?곌린
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="prime">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
       </article>
 
-      <!-- Card 8: [중3 통계] 산점도와 상관관계 & 대푯값 시소 저울 -->
-      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="probability" data-tags="산점도 상관관계 대푯값 평균 중앙값 최빈값 통계 중3 산포도">
+      <!-- Card 8: [以? ?듦퀎] ?곗젏?꾩? ?곴?愿怨?& ???컪 ?쒖냼 ???-->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="probability" data-tags="?곗젏???곴?愿怨????컪 ?됯퇏 以묒븰媛?理쒕퉰媛??듦퀎 以? ?고룷??>
         <div>
           <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-violet-200 group-hover:to-purple-300 transition-colors">
             <div class="relative w-28 h-20 flex items-center justify-center">
@@ -581,30 +589,29 @@
               <line class="w-24 h-0.5 bg-purple-400 transform -rotate-25"></line>
             </div>
             <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-3">
-              중3-2 통계
+              以?-2 ?듦퀎
             </span>
           </div>
 
           <div class="mt-4 space-y-1.5">
             <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="font-mono font-bold text-purple-600">상관관계 분석</span>
-              <span class="sim-curriculum text-slate-400 font-semibold">대푯값과 산포도</span>
+              <span class="font-mono font-bold text-purple-600">?곴?愿怨?遺꾩꽍</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">???컪怨??고룷??/span>
             </div>
             <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-              산점도와 상관관계 & 대푯값 저울
-            </h3>
+              ?곗젏?꾩? ?곴?愿怨?& ???컪 ???            </h3>
             <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
-              직접 화면을 클릭해 점을 추가하고, 극단적인 이상치(Outlier)가 들어왔을 때 평균과 중앙값의 변화를 비교합니다.
+              吏곸젒 ?붾㈃???대┃???먯쓣 異붽??섍퀬, 洹밸떒?곸씤 ?댁긽移?Outlier)媛 ?ㅼ뼱?붿쓣 ???됯퇏怨?以묒븰媛믪쓽 蹂?붾? 鍮꾧탳?⑸땲??
             </p>
           </div>
         </div>
 
         <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
           <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 점추가
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> ?대┃?섏뿬 ?먯텛媛
           </span>
           <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="scatter">
-            교구 실행
+            援먭뎄 ?ㅽ뻾
             <i data-lucide="play" class="w-3 h-3 ml-1"></i>
           </button>
         </div>
@@ -615,58 +622,55 @@
     <!-- No Search Result State -->
     <div id="noSearchResult" class="hidden text-center py-16 clay-card max-w-md mx-auto mt-8">
       <i data-lucide="search-x" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
-      <h3 class="text-base font-bold text-slate-700">검색된 중학 수학 교구가 없습니다</h3>
-      <p class="text-xs text-slate-500 mt-1">다른 단원명이나 키워드(피타고라스, 일차함수 등)로 검색해보세요.</p>
+      <h3 class="text-base font-bold text-slate-700">寃?됰맂 以묓븰 ?섑븰 援먭뎄媛 ?놁뒿?덈떎</h3>
+      <p class="text-xs text-slate-500 mt-1">?ㅻⅨ ?⑥썝紐낆씠???ㅼ썙???쇳?怨좊씪?? ?쇱감?⑥닔 ??濡?寃?됲빐蹂댁꽭??</p>
     </div>
   </section>
 
 
   <!-- =========================================================
-       5. LIVE INTERACTIVE MIDDLE SCHOOL SANDBOX: 중2 확률 실험실
-       ========================================================= -->
+       5. LIVE INTERACTIVE MIDDLE SCHOOL SANDBOX: 以? ?뺣쪧 ?ㅽ뿕??       ========================================================= -->
   <section id="diceSection" class="max-w-7xl mx-auto px-4 sm:px-8 py-10">
     <div class="clay-card p-6 sm:p-10 relative overflow-hidden bg-gradient-to-br from-white via-indigo-50/40 to-blue-50/60">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        
+
         <!-- Left: Dice Rolling Controls & Stats -->
         <div class="lg:col-span-6 space-y-5">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold clay-badge">
             <i data-lucide="dices" class="w-3.5 h-3.5"></i>
-            <span>[중2 확률 단원] 경우의 수 & 대수의 법칙 실시간 실험실</span>
+            <span>[以? ?뺣쪧 ?⑥썝] 寃쎌슦????& ??섏쓽 踰뺤튃 ?ㅼ떆媛??ㅽ뿕??/span>
           </div>
-          
+
           <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            두 개의 주사위 눈의 합과 확률
+            ??媛쒖쓽 二쇱궗???덉쓽 ?⑷낵 ?뺣쪧
           </h2>
-          
+
           <p class="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
-            주사위 2개를 던졌을 때 <strong>왜 합이 7이 나올 확률(6/36 ≈ 16.7%)이 가장 높을까요?</strong><br />
-            던지기 횟수가 수백 번으로 늘어날수록 이론적 삼각분포로 수렴하는 대수의 법칙(Law of Large Numbers)을 
-            교실에서 학생들과 직접 눈으로 확인해보세요!
+            二쇱궗??2媛쒕? ?섏죱????<strong>???⑹씠 7???섏삱 ?뺣쪧(6/36 ??16.7%)??媛???믪쓣源뚯슂?</strong><br />
+            ?섏?湲??잛닔媛 ?섎갚 踰덉쑝濡??섏뼱?좎닔濡??대줎???쇨컖遺꾪룷濡??섎졃?섎뒗 ??섏쓽 踰뺤튃(Law of Large Numbers)??
+            援먯떎?먯꽌 ?숈깮?ㅺ낵 吏곸젒 ?덉쑝濡??뺤씤?대낫?몄슂!
           </p>
 
           <!-- Live 3D Dice Display Box -->
           <div class="flex items-center gap-4 py-2">
-            <div id="dice1Face" class="clay-dice">⚂</div>
+            <div id="dice1Face" class="clay-dice">??/div>
             <span class="text-2xl font-black text-slate-400">+</span>
-            <div id="dice2Face" class="clay-dice">⚃</div>
+            <div id="dice2Face" class="clay-dice">??/div>
             <div class="ml-2">
-              <span id="lastDiceSum" class="text-lg sm:text-xl font-black text-indigo-700 block">합: 7</span>
-              <span class="text-xs text-slate-500 font-semibold">총 던진 횟수: <strong id="totalDiceThrows" class="text-slate-800">30</strong>회</span>
+              <span id="lastDiceSum" class="text-lg sm:text-xl font-black text-indigo-700 block">?? 7</span>
+              <span class="text-xs text-slate-500 font-semibold">珥??섏쭊 ?잛닔: <strong id="totalDiceThrows" class="text-slate-800">30</strong>??/span>
             </div>
           </div>
 
           <!-- Rolling Action Buttons -->
           <div class="flex flex-wrap items-center gap-2.5 pt-2">
             <button id="roll1Btn" class="clay-btn clay-btn-primary px-4 py-2.5 text-xs sm:text-sm font-bold">
-              <i data-lucide="play" class="w-4 h-4 mr-1"></i> 1회 던지기
-            </button>
+              <i data-lucide="play" class="w-4 h-4 mr-1"></i> 1???섏?湲?            </button>
             <button id="roll10Btn" class="clay-btn clay-btn-secondary px-4 py-2.5 text-xs sm:text-sm font-bold text-indigo-700">
-              <i data-lucide="repeat" class="w-4 h-4 mr-1"></i> 10회 연속
+              <i data-lucide="repeat" class="w-4 h-4 mr-1"></i> 10???곗냽
             </button>
             <button id="roll100Btn" class="clay-btn clay-btn-coral px-4 py-2.5 text-xs sm:text-sm font-bold text-white">
-              <i data-lucide="zap" class="w-4 h-4 mr-1"></i> 100회 폭풍 던지기
-            </button>
+              <i data-lucide="zap" class="w-4 h-4 mr-1"></i> 100????뭾 ?섏?湲?            </button>
             <button id="resetDiceBtn" class="clay-btn clay-btn-secondary px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-600">
               <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
             </button>
@@ -677,8 +681,8 @@
         <div class="lg:col-span-6">
           <div class="clay-card p-5 bg-white/90">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <span class="text-xs font-bold text-slate-700">주사위 눈의 합(2~12) 빈도수 분포</span>
-              <span class="text-[11px] font-bold text-rose-600">이론상 합 7 최다 (6/36)</span>
+              <span class="text-xs font-bold text-slate-700">二쇱궗???덉쓽 ??2~12) 鍮덈룄??遺꾪룷</span>
+              <span class="text-[11px] font-bold text-rose-600">?대줎????7 理쒕떎 (6/36)</span>
             </div>
 
             <!-- Bar Chart Container -->
@@ -743,7 +747,7 @@
             </div>
 
             <div class="text-center text-[11px] text-slate-500 pt-2 border-t border-slate-100 font-medium">
-              가로축: 두 눈의 합 (2~12) | 세로축: 나온 횟수 비율 (%)
+              媛濡쒖텞: ???덉쓽 ??(2~12) | ?몃줈異? ?섏삩 ?잛닔 鍮꾩쑉 (%)
             </div>
           </div>
         </div>
@@ -754,7 +758,7 @@
 
 
   <!-- =========================================================
-       6. TEACHER'S CLASSROOM TIPS (선생님을 위한 수업 활용 팁)
+       6. TEACHER'S CLASSROOM TIPS (?좎깮?섏쓣 ?꾪븳 ?섏뾽 ?쒖슜 ??
        ========================================================= -->
   <section id="teachertips" class="max-w-7xl mx-auto px-4 sm:px-8 py-8">
     <div class="clay-card p-7 sm:p-10 relative overflow-hidden bg-gradient-to-r from-emerald-50/70 via-teal-50/50 to-indigo-50/60">
@@ -765,10 +769,10 @@
           </span>
           <div>
             <h2 class="text-xl sm:text-2xl font-black text-slate-900">
-              선생님, 교실 수업에서 이렇게 활용해보세요!
+              ?좎깮?? 援먯떎 ?섏뾽?먯꽌 ?대젃寃??쒖슜?대낫?몄슂!
             </h2>
             <p class="text-xs sm:text-sm text-slate-600 mt-0.5">
-              별도 설치 없이 교실 스마트TV, 전자칠판, 1인 1패드 환경에서 바로 실행 가능합니다.
+              蹂꾨룄 ?ㅼ튂 ?놁씠 援먯떎 ?ㅻ쭏?퇤V, ?꾩옄移좏뙋, 1??1?⑤뱶 ?섍꼍?먯꽌 諛붾줈 ?ㅽ뻾 媛?ν빀?덈떎.
             </p>
           </div>
         </div>
@@ -776,26 +780,26 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           <div class="clay-inset p-4 rounded-2xl bg-white/70">
             <div class="font-bold text-xs text-indigo-700 mb-1 flex items-center gap-1.5">
-              <i data-lucide="monitor" class="w-4 h-4"></i> 전자칠판 판서 시연
+              <i data-lucide="monitor" class="w-4 h-4"></i> ?꾩옄移좏뙋 ?먯꽌 ?쒖뿰
             </div>
             <p class="text-xs text-slate-600 leading-relaxed">
-              개념 도입 시 교사가 큰 화면에서 슬라이더를 당겨보이며 공식이 유도되는 시각적 원리를 확인시킵니다.
+              媛쒕뀗 ?꾩엯 ??援먯궗媛 ???붾㈃?먯꽌 ?щ씪?대뜑瑜??밴꺼蹂댁씠硫?怨듭떇???좊룄?섎뒗 ?쒓컖???먮━瑜??뺤씤?쒗궢?덈떎.
             </p>
           </div>
           <div class="clay-inset p-4 rounded-2xl bg-white/70">
             <div class="font-bold text-xs text-emerald-700 mb-1 flex items-center gap-1.5">
-              <i data-lucide="tablet" class="w-4 h-4"></i> 1인 1태블릿 모둠 탐구
+              <i data-lucide="tablet" class="w-4 h-4"></i> 1??1?쒕툝由?紐⑤몺 ?먭뎄
             </div>
             <p class="text-xs text-slate-600 leading-relaxed">
-              학생들이 개별 패드로 직접 수치를 바꿔보며 학습지의 질문(예: a가 음수면 어떻게 될까?)을 해결합니다.
+              ?숈깮?ㅼ씠 媛쒕퀎 ?⑤뱶濡?吏곸젒 ?섏튂瑜?諛붽퓭蹂대ŉ ?숈뒿吏??吏덈Ц(?? a媛 ?뚯닔硫??대뼸寃??좉퉴?)???닿껐?⑸땲??
             </p>
           </div>
           <div class="clay-inset p-4 rounded-2xl bg-white/70">
             <div class="font-bold text-xs text-purple-700 mb-1 flex items-center gap-1.5">
-              <i data-lucide="help-circle" class="w-4 h-4"></i> 형성평가 & 발문 유도
+              <i data-lucide="help-circle" class="w-4 h-4"></i> ?뺤꽦?됯? & 諛쒕Ц ?좊룄
             </div>
             <p class="text-xs text-slate-600 leading-relaxed">
-              "주사위를 100번 던졌을 때 왜 7이 가장 많이 나왔을까?" 등 생각하는 힘을 기르는 발문으로 수업을 연결합니다.
+              "二쇱궗?꾨? 100踰??섏죱??????7??媛??留롮씠 ?섏솕?꾧퉴?" ???앷컖?섎뒗 ?섏쓣 湲곕Ⅴ??諛쒕Ц?쇰줈 ?섏뾽???곌껐?⑸땲??
             </p>
           </div>
         </div>
@@ -805,7 +809,7 @@
 
 
   <!-- =========================================================
-       7. FOOTER (클레이 푸터)
+       7. FOOTER (?대젅???명꽣)
        ========================================================= -->
   <footer class="max-w-7xl mx-auto px-4 sm:px-8 pt-6 pb-16 text-center text-xs text-slate-500">
     <div class="clay-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -813,44 +817,44 @@
         <div class="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
           M
         </div>
-        <span class="font-bold text-slate-800">MathClay 중학수학</span>
-        <span class="text-slate-400">| 중학교 수학교사를 위한 인터랙티브 교구 플랫폼</span>
+        <span class="font-bold text-slate-800">MathClay 以묓븰?섑븰</span>
+        <span class="text-slate-400">| 以묓븰援??섑븰援먯궗瑜??꾪븳 ?명꽣?숉떚釉?援먭뎄 ?뚮옯??/span>
       </div>
-      
+
       <div class="flex items-center gap-3">
         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 clay-badge text-[11px] font-bold text-slate-600">
           <i data-lucide="triangle" class="w-3 h-3 text-black fill-black"></i>
           Deployed on Vercel
         </span>
-        <span>© 2026 MathClay Junior. All rights reserved.</span>
+        <span>짤 2026 MathClay Junior. All rights reserved.</span>
       </div>
     </div>
   </footer>
 
 
   <!-- =========================================================
-       8. MODAL: 실시간 인터랙티브 시뮬레이션 스튜디오 (Playable Studio)
+       8. MODAL: ?ㅼ떆媛??명꽣?숉떚釉??쒕??덉씠???ㅽ뒠?붿삤 (Playable Studio)
        ========================================================= -->
   <div id="simModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center p-3 sm:p-6 overflow-y-auto">
     <div class="clay-card w-full max-w-4xl max-h-[94vh] overflow-y-auto p-5 sm:p-7 bg-white relative my-auto">
-      
+
       <!-- Modal Top Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div class="flex items-center gap-2.5">
           <span id="modalGrade" class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-black clay-badge">
-            중학교 교육과정
+            以묓븰援?援먯쑁怨쇱젙
           </span>
           <h3 id="modalTitle" class="text-lg sm:text-2xl font-black text-slate-900">
-            시뮬레이션 교구 제목
+            ?쒕??덉씠??援먭뎄 ?쒕ぉ
           </h3>
         </div>
 
         <div class="flex items-center gap-2">
           <button id="modalHeaderSupabaseBtn" class="hidden clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-black text-emerald-800 bg-emerald-50 border border-emerald-300 flex items-center gap-1.5 shadow-sm hover:bg-emerald-100 transition-all cursor-pointer">
             <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-600"></i>
-            <span>⚙️ Supabase 설정</span>
+            <span>?숋툘 Supabase ?ㅼ젙</span>
           </button>
-          <button id="modalCloseBtn" class="clay-btn clay-btn-secondary p-2 text-slate-500 hover:text-slate-800 focus:outline-none" aria-label="닫기">
+          <button id="modalCloseBtn" class="clay-btn clay-btn-secondary p-2 text-slate-500 hover:text-slate-800 focus:outline-none" aria-label="?リ린">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
@@ -863,7 +867,7 @@
 
       <!-- Real-time Mathematical Readout / Stats Box -->
       <div id="modalStudioInfo" class="mb-3 p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs font-mono">
-        실시간 계산 수치가 표시됩니다.
+        ?ㅼ떆媛?怨꾩궛 ?섏튂媛 ?쒖떆?⑸땲??
       </div>
 
       <!-- Dynamic Interactive Controls Container (Populated by simulations.js) -->
@@ -874,16 +878,16 @@
       <!-- Description & Classroom Teaching Guide -->
       <div class="mt-4 pt-3 border-t border-slate-100 space-y-3">
         <p id="modalDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-          교구에 대한 설명이 표시됩니다.
+          援먭뎄??????ㅻ챸???쒖떆?⑸땲??
         </p>
 
         <!-- Teaching Point Callout Box -->
         <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs text-amber-900 space-y-1">
           <span class="font-bold flex items-center gap-1.5 text-amber-800">
-            <i data-lucide="sparkles" class="w-4 h-4"></i> 선생님을 위한 수업 지도 Tip:
+            <i data-lucide="sparkles" class="w-4 h-4"></i> ?좎깮?섏쓣 ?꾪븳 ?섏뾽 吏??Tip:
           </span>
           <p id="modalTeachingPoint" class="leading-relaxed font-medium">
-            학생들에게 발문해볼 수 있는 핵심 포인트가 안내됩니다.
+            ?숈깮?ㅼ뿉寃?諛쒕Ц?대낵 ???덈뒗 ?듭떖 ?ъ씤?멸? ?덈궡?⑸땲??
           </p>
         </div>
       </div>
@@ -891,10 +895,161 @@
       <!-- Bottom Close Action -->
       <div class="mt-5 pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
         <button onclick="document.getElementById('simModal').classList.add('hidden'); document.getElementById('simModal').classList.remove('flex'); SimulationEngine.stop();" class="clay-btn clay-btn-primary px-6 py-2.5 text-xs sm:text-sm font-bold text-white">
-          탐구 완료 / 닫기
+          ?먭뎄 ?꾨즺 / ?リ린
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- =========================================================
+       9. FLOATING CHATBOT LAUNCHER (AI ?섑븰 ?쒗꽣 ?뚮줈??踰꾪듉)
+       ========================================================= -->
+  <aside aria-label="AI ?섑븰 ?쒗꽣" class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40">
+    <button id="chatFabBtn" class="clay-chat-fab px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-2.5 shadow-2xl group cursor-pointer focus:outline-none" title="以묓븰?섑븰 AI 吏덈Ц 梨쀫큸 ?닿린">
+      <div class="relative flex items-center justify-center">
+        <i data-lucide="bot" class="w-6 h-6 transform group-hover:scale-110 transition-transform"></i>
+        <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+      </div>
+      <div class="hidden sm:flex flex-col text-left">
+        <span class="text-xs font-black tracking-tight leading-tight">AI ?섑븰 ?쒗꽣</span>
+        <span class="text-[10px] text-indigo-100 font-medium">?섑븰 吏덈Ц ?ㅼ떆媛??듬?</span>
+      </div>
+    </button>
+  </aside>
+
+  <!-- =========================================================
+       10. CHATBOT WINDOW (MathClay AI ?섑븰 ?쒗꽣 ??붿갹)
+       ========================================================= -->
+  <div id="chatWindow" class="hidden fixed bottom-4 right-3 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-24px)] sm:w-[440px] h-[600px] max-h-[86vh] flex-col clay-chat-window overflow-hidden">
+    <!-- Chat Header -->
+    <div class="px-4 sm:px-5 py-3.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center font-black text-sm text-white shadow-inner">
+          <i data-lucide="bot" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h4 class="font-black text-sm tracking-tight text-white">MathClay AI ?섑븰 ?쒗꽣</h4>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-400/30 text-emerald-200 border border-emerald-300/40">?⑤씪??/span>
+          </div>
+          <p class="text-[11px] text-indigo-100 font-medium">以?~以? 留욎땄???섑븰援먯궗 AI</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button id="chatSettingsBtn" class="p-1.5 rounded-xl hover:bg-white/15 text-indigo-100 hover:text-white transition-colors" title="API ?ㅼ젙" aria-label="API ?ㅼ젙">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+        </button>
+        <button id="chatClearBtn" class="p-1.5 rounded-xl hover:bg-white/15 text-indigo-100 hover:text-white transition-colors" title="??????쒖옉" aria-label="??????쒖옉">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+        <button id="chatCloseBtn" class="p-1.5 rounded-xl hover:bg-white/15 text-indigo-100 hover:text-white transition-colors ml-0.5" title="?リ린" aria-label="?リ린">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Question Chips Row -->
+    <div class="px-3.5 py-2 bg-indigo-50/70 border-b border-indigo-100/60 overflow-x-auto flex items-center gap-1.5">
+      <span class="text-[10px] font-bold text-indigo-600 flex items-center gap-1 flex-shrink-0">
+        <i data-lucide="sparkles" class="w-3 h-3"></i> 異붿쿇:
+      </span>
+      <div id="chatQuickChips" class="flex items-center gap-1.5 flex-nowrap">
+        <!-- Injected dynamically by js/chat.js -->
+      </div>
+    </div>
+
+    <!-- Chat Messages Scroll Area -->
+    <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-3 text-slate-700 bg-slate-50/40">
+      <div class="flex items-start gap-2.5 my-2">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-black shadow-sm">
+          AI
+        </div>
+        <div class="chat-bubble-bot p-4 max-w-[85%] text-xs sm:text-sm leading-relaxed space-y-2">
+          <p class="font-bold text-indigo-700 flex items-center gap-1.5">
+            <span>?몝 ?덈뀞! MathClay AI ?섑븰 ?쒗꽣??</span>
+          </p>
+          <p>
+            以묓븰援?1~3?숇뀈 ?섑븰(?쇱감?⑥닔, ?쇳?怨좊씪?? ?쇨컖鍮? ?몄떖쨌?댁떖, ?뚯씤?섎텇???? 臾댁뾿?대뱺 ?명븯寃?吏덈Ц?댁쨾.
+            怨듭떇???먮━遺???④퀎蹂???닿퉴吏 移쒖젅?섍쾶 ?뚮젮以꾧쾶!
+          </p>
+          <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+            ?뮕 ??異붿쿇 吏덈Ц 移⑹쓣 ?꾨Ⅴ嫄곕굹, 沅곴툑??臾몄젣??媛쒕뀗??吏곸젒 ?곸뼱蹂댁꽭??
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="p-3 bg-white/90 border-t border-slate-200/80">
+      <div class="clay-inset px-3 py-2 flex items-center gap-2 bg-slate-50">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="?섑븰 吏덈Ц???낅젰?섏꽭??.. (?? ?쇳?怨좊씪???뺣━媛 萸먯빞?)"
+          class="bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none w-full"
+          autocomplete="off"
+        />
+        <button id="chatSendBtn" class="clay-btn clay-btn-primary p-2 w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center" aria-label="吏덈Ц ?꾩넚">
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="flex items-center justify-between mt-1 px-1 text-[10px] text-slate-400">
+        <span>Enter瑜??꾨Ⅴ硫?吏덈Ц???꾩넚?⑸땲??</span>
+        <span class="text-indigo-600 font-semibold">KaTeX ?섏떇 吏??($...$)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       11. MODAL: AI ?섑븰 ?쒗꽣 ?ㅼ젙 (API Key ?덈궡)
+       ========================================================= -->
+  <div id="chatSettingsModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] items-center justify-center p-4">
+    <div class="clay-card w-full max-w-md p-6 bg-white relative my-auto space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i data-lucide="bot" class="w-5 h-5 text-indigo-600"></i>
+          <h4 class="text-base font-black text-slate-900">AI ?섑븰 ?쒗꽣 API ?ㅼ젙</h4>
+        </div>
+        <button id="chatCloseSettingsBtn" class="clay-btn clay-btn-secondary p-1.5 text-slate-500 hover:text-slate-800" aria-label="?リ린">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 space-y-2">
+        <p class="font-bold flex items-center gap-1.5 text-indigo-800">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+          Vercel ?섍꼍蹂???먮룞 ?곕룞 吏??        </p>
+        <p class="leading-relaxed">
+          Vercel ??쒕낫??Settings ??Environment Variables)??<code>OPENAI_API_KEY</code>瑜??깅줉?대몢?⑤떎硫?蹂꾨룄 ?ㅼ젙 ?놁씠 ?먮룞?쇰줈 ?덉쟾?섍쾶 ?곕룞?⑸땲??
+        </p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-700">
+          濡쒖뺄 ?뚯뒪?몄슜 OpenAI API Key (?좏깮?ы빆)
+        </label>
+        <input
+          type="password"
+          id="chatCustomKeyInput"
+          placeholder="sk-proj-..."
+          class="clay-inset w-full px-3.5 py-2 text-xs font-mono text-slate-800 focus:outline-none"
+        />
+        <p class="text-[11px] text-slate-400">
+          * ?낅젰 ??釉뚮씪?곗? LocalStorage?먮쭔 ??λ릺硫??몃?濡??좎텧?섏? ?딆뒿?덈떎.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="chatClearSavedKeyBtn" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold text-slate-600">
+          ??珥덇린??        </button>
+        <button id="chatSaveKeyBtn" class="clay-btn clay-btn-primary px-4 py-1.5 text-xs font-bold text-white">
+          ??ν븯湲?        </button>
+      </div>
     </div>
   </div>
 
@@ -910,5 +1065,7 @@
   <script src="js/simulations.js?v=20260914_4"></script>
   <!-- Custom Application Script -->
   <script src="js/app.js?v=20260914_4"></script>
+  <!-- AI Math Tutor Chat Script -->
+  <script src="js/chat.js?v=20260914_1"></script>
 </body>
 </html>
