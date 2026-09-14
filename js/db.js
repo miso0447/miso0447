@@ -1,188 +1,265 @@
 /**
- * MathClay Junior - 외심/내심 탐구 결과 데이터베이스 관리 모듈 (IndexedDB + LocalStorage)
+ * MathClay Junior - Supabase 클라우드 데이터베이스 관리 모듈
+ * 외심/내심 탐구 결과를 Supabase PostgreSQL 테이블에 실시간 저장 및 조회합니다.
  */
 
 const MathClayDB = {
-  dbName: "MathClay_Junior_DB",
-  storeName: "incenter_circumcenter_records",
-  dbVersion: 1,
-  dbInstance: null,
+  // 기본 설정 또는 localStorage에 저장된 설정 로드
+  supabaseClient: null,
+  configKey: "mathclay_supabase_config",
 
-  // IndexedDB 초기화
-  async init() {
-    if (this.dbInstance) return this.dbInstance;
-
-    return new Promise((resolve) => {
-      if (!window.indexedDB) {
-        console.warn("IndexedDB를 지원하지 않아 LocalStorage로 대체합니다.");
-        resolve(null);
-        return;
-      }
-
-      const request = indexedDB.open(this.dbName, this.dbVersion);
-
-      request.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: "id" });
-          store.createIndex("createdAt", "createdAt", { unique: false });
-          store.createIndex("studentName", "studentName", { unique: false });
-        }
-      };
-
-      request.onsuccess = (e) => {
-        this.dbInstance = e.target.result;
-        resolve(this.dbInstance);
-      };
-
-      request.onerror = (e) => {
-        console.error("IndexedDB 열기 실패:", e);
-        resolve(null);
-      };
-    });
+  // Supabase 기본 프로젝트 정보 (사용자 프로젝트 키 연동 가능)
+  defaultConfig: {
+    url: "",
+    anonKey: ""
   },
 
-  // 탐구 결과 데이터베이스 저장 (IndexedDB + LocalStorage 이중 보관)
-  async saveRecord(record) {
-    const db = await this.init();
-    record.id = record.id || `rec_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-    record.createdAt = record.createdAt || new Date().toISOString();
-    record.createdDateStr = new Date().toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-
-    // 1. IndexedDB 저장
-    if (db) {
-      try {
-        await new Promise((resolve, reject) => {
-          const tx = db.transaction(this.storeName, "readwrite");
-          const store = tx.objectStore(this.storeName);
-          const req = store.put(record);
-          req.onsuccess = () => resolve(true);
-          req.onerror = (err) => reject(err);
-        });
-      } catch (err) {
-        console.warn("IndexedDB 저장 중 오류, LocalStorage로 백업:", err);
-      }
-    }
-
-    // 2. LocalStorage에도 동기화 백업
+  getConfig() {
     try {
-      const localList = this.getLocalRecords();
-      const existingIdx = localList.findIndex((r) => r.id === record.id);
-      if (existingIdx >= 0) {
-        localList[existingIdx] = record;
-      } else {
-        localList.unshift(record);
+      const saved = localStorage.getItem(this.configKey);
+      if (saved) {
+        return JSON.parse(saved);
       }
-      localStorage.setItem("mathclay_incenter_records", JSON.stringify(localList));
-    } catch (e) {
-      console.warn("LocalStorage 백업 실패:", e);
-    }
-
-    // 3. Vercel Serverless API가 있는 경우 원격 저장도 시도 (선택적)
-    try {
-      fetch("/api/records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(record)
-      }).catch(() => {});
     } catch (e) {}
-
-    return record;
+    return this.defaultConfig;
   },
 
-  // 전체 탐구 기록 조회
-  async getAllRecords() {
-    const db = await this.init();
+  saveConfig(url, anonKey) {
+    const cleanUrl = (url || "").trim().replace(/\/$/, "");
+    const cleanKey = (anonKey || "").trim();
+    localStorage.setItem(
+      this.configKey,
+      JSON.stringify({ url: cleanUrl, anonKey: cleanKey })
+    );
+    this.supabaseClient = null; // 클라이언트 재초기화
+    this.init();
+  },
 
-    if (db) {
+  // Supabase 클라이언트 초기화
+  init() {
+    if (this.supabaseClient) return this.supabaseClient;
+
+    const config = this.getConfig();
+    if (!config.url || !config.anonKey) {
+      return null;
+    }
+
+    if (window.supabase && typeof window.supabase.createClient === "function") {
       try {
-        return await new Promise((resolve) => {
-          const tx = db.transaction(this.storeName, "readonly");
-          const store = tx.objectStore(this.storeName);
-          const req = store.getAll();
-          req.onsuccess = () => {
-            const records = req.result || [];
-            records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            resolve(records);
-          };
-          req.onerror = () => resolve(this.getLocalRecords());
-        });
+        this.supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+        return this.supabaseClient;
       } catch (e) {
-        return this.getLocalRecords();
+        console.error("Supabase 클라이언트 생성 실패:", e);
+        return null;
       }
     }
 
-    return this.getLocalRecords();
+    return null;
   },
 
-  // 특정 기록 삭제
-  async deleteRecord(id) {
-    const db = await this.init();
-    if (db) {
+  // Supabase 연결 여부 확인
+  isConnected() {
+    return this.init() !== null;
+  },
+
+  // 탐구 결과 Supabase DB 저장
+  async saveRecord(record) {
+    const client = this.init();
+
+    // Supabase 컬럼 규격에 매핑
+    const payload = {
+      id: record.id || `rec_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      created_at: new Date().toISOString(),
+      student_name: record.studentName || "학생 탐구자",
+      triangle_type: record.triangleType || "예각삼각형",
+      circum_location: record.circumLocation || "내부",
+      circum_x: Number(record.circumcenter?.x || 0),
+      circum_y: Number(record.circumcenter?.y || 0),
+      circum_r: Number(record.circumcenter?.r || 0),
+      in_x: Number(record.incenter?.x || 0),
+      in_y: Number(record.incenter?.y || 0),
+      in_r: Number(record.incenter?.r || 0),
+      vertex_a_x: Number(record.vertices?.A.x || 0),
+      vertex_a_y: Number(record.vertices?.A.y || 0),
+      vertex_b_x: Number(record.vertices?.B.x || 0),
+      vertex_b_y: Number(record.vertices?.B.y || 0),
+      vertex_c_x: Number(record.vertices?.C.x || 0),
+      vertex_c_y: Number(record.vertices?.C.y || 0),
+      side_a: Number(record.sideLengths?.a || 0),
+      side_b: Number(record.sideLengths?.b || 0),
+      side_c: Number(record.sideLengths?.c || 0),
+      memo: record.memo || ""
+    };
+
+    if (client) {
       try {
-        await new Promise((resolve) => {
-          const tx = db.transaction(this.storeName, "readwrite");
-          const store = tx.objectStore(this.storeName);
-          store.delete(id);
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => resolve(false);
-        });
-      } catch (e) {}
+        const { data, error } = await client
+          .from("incenter_records")
+          .insert([payload])
+          .select();
+
+        if (error) {
+          console.warn("Supabase 저장 오류 (테이블 설정 또는 RLS 확인 필요):", error);
+          this.backupToLocal(payload);
+          return { success: false, error: error.message, isLocal: true, payload };
+        }
+
+        return { success: true, isLocal: false, data: data[0] };
+      } catch (err) {
+        console.error("Supabase API 호출 실패:", err);
+        this.backupToLocal(payload);
+        return { success: false, error: err.message, isLocal: true, payload };
+      }
+    } else {
+      // Supabase 설정이 아직 입력되지 않은 경우 로컬에 임시 보관
+      this.backupToLocal(payload);
+      return { success: true, isLocal: true, payload };
+    }
+  },
+
+  // 탐구 결과 Supabase DB에서 전체 조회
+  async getAllRecords() {
+    const client = this.init();
+
+    if (client) {
+      try {
+        const { data, error } = await client
+          .from("incenter_records")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (!error && Array.isArray(data)) {
+          return data.map((d) => this.formatRecordFromSupabase(d));
+        } else {
+          console.warn("Supabase 조회 실패, 로컬 캐시 사용:", error);
+        }
+      } catch (err) {
+        console.warn("Supabase 네트워크 조회 실패, 로컬 캐시 사용:", err);
+      }
     }
 
-    // LocalStorage 삭제 동기화
+    return this.getLocalBackupRecords();
+  },
+
+  // 특정 탐구 기록 삭제
+  async deleteRecord(id) {
+    const client = this.init();
+
+    if (client) {
+      try {
+        await client.from("incenter_records").delete().eq("id", id);
+      } catch (e) {
+        console.warn("Supabase 삭제 실패:", e);
+      }
+    }
+
+    // 로컬 백업 동기화 삭제
     try {
-      const list = this.getLocalRecords().filter((r) => r.id !== id);
-      localStorage.setItem("mathclay_incenter_records", JSON.stringify(list));
+      const list = this.getLocalBackupRecords().filter((r) => r.id !== id);
+      localStorage.setItem("mathclay_incenter_backup", JSON.stringify(list));
     } catch (e) {}
+
     return true;
   },
 
-  // LocalStorage 읽기 헬퍼
-  getLocalRecords() {
+  // Supabase 로우 -> 프론트엔드 레코드 형식 변환
+  formatRecordFromSupabase(d) {
+    const dateObj = new Date(d.created_at);
+    const dateStr = !isNaN(dateObj)
+      ? dateObj.toLocaleString("ko-KR", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : "";
+
+    return {
+      id: d.id,
+      studentName: d.student_name,
+      triangleType: d.triangle_type,
+      circumLocation: d.circum_location,
+      createdDateStr: dateStr,
+      vertices: {
+        A: { x: Number(d.vertex_a_x), y: Number(d.vertex_a_y), name: "A" },
+        B: { x: Number(d.vertex_b_x), y: Number(d.vertex_b_y), name: "B" },
+        C: { x: Number(d.vertex_c_x), y: Number(d.vertex_c_y), name: "C" }
+      },
+      circumcenter: {
+        x: Number(d.circum_x),
+        y: Number(d.circum_y),
+        r: Number(d.circum_r)
+      },
+      incenter: {
+        x: Number(d.in_x),
+        y: Number(d.in_y),
+        r: Number(d.in_r)
+      },
+      sideLengths: {
+        a: Number(d.side_a),
+        b: Number(d.side_b),
+        c: Number(d.side_c)
+      },
+      memo: d.memo
+    };
+  },
+
+  // 로컬 백업 관리
+  backupToLocal(payload) {
     try {
-      const data = localStorage.getItem("mathclay_incenter_records");
+      const list = this.getLocalBackupRecords();
+      list.unshift(this.formatRecordFromSupabase(payload));
+      localStorage.setItem("mathclay_incenter_backup", JSON.stringify(list.slice(0, 100)));
+    } catch (e) {}
+  },
+
+  getLocalBackupRecords() {
+    try {
+      const data = localStorage.getItem("mathclay_incenter_backup");
       return data ? JSON.parse(data) : [];
     } catch (e) {
       return [];
     }
   },
 
-  // 엑셀(CSV) 다운로드 기능
-  exportToCSV(records) {
-    if (!records || records.length === 0) {
-      alert("저장된 탐구 데이터가 없습니다.");
-      return;
-    }
+  // Supabase 테이블 생성용 SQL 스크립트 제공
+  getSQLSchema() {
+    return `-- Supabase SQL Editor에서 실행할 테이블 생성 쿼리문
+CREATE TABLE IF NOT EXISTS incenter_records (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  student_name TEXT,
+  triangle_type TEXT,
+  circum_location TEXT,
+  circum_x NUMERIC,
+  circum_y NUMERIC,
+  circum_r NUMERIC,
+  in_x NUMERIC,
+  in_y NUMERIC,
+  in_r NUMERIC,
+  vertex_a_x NUMERIC,
+  vertex_a_y NUMERIC,
+  vertex_b_x NUMERIC,
+  vertex_b_y NUMERIC,
+  vertex_c_x NUMERIC,
+  vertex_c_y NUMERIC,
+  side_a NUMERIC,
+  side_b NUMERIC,
+  side_c NUMERIC,
+  memo TEXT
+);
 
-    let csvContent = "\uFEFF"; // UTF-8 BOM
-    csvContent += "일시,학생/모둠명,삼각형분류,외심위치(X/Y/반지름),외심위치특징,내심위치(X/Y/반지름),A좌표,B좌표,C좌표,학생관찰메모\n";
+-- 누구나 읽고 쓸 수 있도록 RLS 활성화 및 공개 정책 부여 (수업용)
+ALTER TABLE incenter_records ENABLE ROW LEVEL SECURITY;
 
-    records.forEach((r) => {
-      const circumStr = `"${r.circumcenter?.x.toFixed(1) || 0}, ${r.circumcenter?.y.toFixed(1) || 0} (r=${r.circumcenter?.r.toFixed(1) || 0})"`;
-      const incenterStr = `"${r.incenter?.x.toFixed(1) || 0}, ${r.incenter?.y.toFixed(1) || 0} (r=${r.incenter?.r.toFixed(1) || 0})"`;
-      const ptA = `"${r.vertices?.A.x || 0}, ${r.vertices?.A.y || 0}"`;
-      const ptB = `"${r.vertices?.B.x || 0}, ${r.vertices?.B.y || 0}"`;
-      const ptC = `"${r.vertices?.C.x || 0}, ${r.vertices?.C.y || 0}"`;
-      const memo = `"${(r.memo || "").replace(/"/g, '""')}"`;
-      const char = `"${r.circumLocation || ""}"`;
+DROP POLICY IF EXISTS "Allow public read" ON incenter_records;
+CREATE POLICY "Allow public read" ON incenter_records FOR SELECT USING (true);
 
-      csvContent += `${r.createdDateStr},"${r.studentName || "학생"}",${r.triangleType},${circumStr},${char},${incenterStr},${ptA},${ptB},${ptC},${memo}\n`;
-    });
+DROP POLICY IF EXISTS "Allow public insert" ON incenter_records;
+CREATE POLICY "Allow public insert" ON incenter_records FOR INSERT WITH CHECK (true);
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `외심내심_탐구결과_DB_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+DROP POLICY IF EXISTS "Allow public delete" ON incenter_records;
+CREATE POLICY "Allow public delete" ON incenter_records FOR DELETE USING (true);
+`;
   }
 };

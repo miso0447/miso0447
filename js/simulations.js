@@ -1115,25 +1115,64 @@ const SimulationEngine = {
           </div>
         </div>
 
-        <!-- Row 2: 데이터베이스 저장 & 기록 툴바 -->
+        <!-- Row 2: Supabase 클라우드 데이터베이스 툴바 -->
         <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-200">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <button id="btnOpenSaveDb" class="clay-btn clay-btn-primary px-3.5 py-1.5 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
-              <i data-lucide="database" class="w-3.5 h-3.5"></i> 현재 결과 DB 저장
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-300"></i> Supabase DB 저장
             </button>
             <button id="btnToggleDbList" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold text-indigo-700 flex items-center gap-1.5">
-              <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> 저장된 DB 기록 보기 <span id="dbRecordBadge" class="ml-1 px-1.5 py-0.2 bg-indigo-100 rounded-full text-[10px] font-mono">0건</span>
+              <i data-lucide="database" class="w-3.5 h-3.5"></i> Supabase 기록 보기 <span id="dbRecordBadge" class="ml-1 px-1.5 py-0.2 bg-indigo-100 rounded-full text-[10px] font-mono">0건</span>
+            </button>
+            <button id="btnOpenSupabaseConfig" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-slate-700 flex items-center gap-1 hover:bg-slate-100">
+              <i data-lucide="settings" class="w-3.5 h-3.5 text-indigo-600"></i> Supabase 설정
             </button>
           </div>
           <div id="dbSaveToast" class="hidden text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 animate-bounce">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> DB 저장 완료!
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Supabase DB 저장 완료!
           </div>
         </div>
 
-        <!-- Row 3: DB 저장 인라인 폼 (열림/닫힘) -->
+        <!-- Row 3: Supabase 연결 설정 패널 (URL / Anon Key / SQL 복사) -->
+        <div id="supabaseConfigPanel" class="hidden p-4 rounded-2xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-200 clay-card space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-black text-xs">S</span>
+              <h4 class="text-xs sm:text-sm font-black text-slate-900">Supabase 클라우드 데이터베이스 연결 설정</h4>
+            </div>
+            <button id="btnCloseConfig" class="clay-btn clay-btn-secondary p-1 text-slate-400 hover:text-slate-700">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            선생님의 <strong>Supabase 프로젝트 URL</strong>과 <strong>anon public API Key</strong>를 입력하면 모든 학생과 태블릿의 외심/내심 탐구 데이터가 Supabase 클라우드 PostgreSQL 테이블(<code class="bg-white/80 px-1 rounded font-mono text-emerald-700">incenter_records</code>)에 실시간 보관됩니다.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Project URL</label>
+              <input type="text" id="supabaseUrlInput" placeholder="https://your-project.supabase.co" class="w-full clay-inset px-3 py-1.5 text-xs font-mono text-slate-800 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">anon public Key</label>
+              <input type="text" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full clay-inset px-3 py-1.5 text-xs font-mono text-slate-800 outline-none">
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+            <button id="btnCopySql" class="clay-btn clay-btn-secondary px-3 py-1 text-[11px] font-bold text-emerald-800 flex items-center gap-1 bg-white/90">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Supabase 테이블 생성 SQL 복사
+            </button>
+            <button id="btnSaveSupabaseConfig" class="clay-btn clay-btn-primary px-4 py-1 text-xs font-bold text-white shadow-md">
+              연결 정보 저장
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 4: DB 저장 폼 -->
         <div id="dbSaveForm" class="hidden p-3.5 rounded-2xl bg-white border border-indigo-100 clay-card space-y-2.5">
           <div class="flex items-center justify-between text-xs font-bold text-slate-800">
-            <span class="flex items-center gap-1 text-indigo-700 font-black"><i data-lucide="save" class="w-3.5 h-3.5"></i> 탐구 결과 데이터베이스에 저장</span>
+            <span class="flex items-center gap-1.5 text-indigo-700 font-black">
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-500"></i> Supabase DB에 현재 탐구 결과 저장
+            </span>
             <span id="dbCurrentTypeBadge" class="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold">삼각형 판별 중...</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -1148,25 +1187,27 @@ const SimulationEngine = {
           </div>
           <div class="flex items-center justify-end gap-2 pt-1">
             <button id="btnCancelSave" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-semibold text-slate-600">취소</button>
-            <button id="btnConfirmSave" class="clay-btn clay-btn-primary px-4 py-1 text-xs font-bold text-white">데이터베이스에 저장</button>
+            <button id="btnConfirmSave" class="clay-btn clay-btn-primary px-4 py-1 text-xs font-bold text-white flex items-center gap-1">
+              <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Supabase에 영구 등록
+            </button>
           </div>
         </div>
 
-        <!-- Row 4: 저장된 DB 기록 목록 뷰 -->
+        <!-- Row 5: 저장된 Supabase 클라우드 기록 목록 뷰 -->
         <div id="dbRecordsView" class="hidden p-3.5 rounded-2xl bg-white border border-slate-200 clay-card space-y-2.5">
           <div class="flex items-center justify-between pb-1 border-b border-slate-100">
             <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <i data-lucide="server" class="w-4 h-4 text-indigo-600"></i> 외심/내심 DB 저장 기록 (<span id="dbCountText">0</span>건)
+              <i data-lucide="server" class="w-4 h-4 text-emerald-600"></i> Supabase 클라우드 저장 기록 (<span id="dbCountText">0</span>건)
             </span>
             <div class="flex items-center gap-2">
-              <button id="btnExportCSV" class="clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-emerald-700 flex items-center gap-1">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i> 엑셀(CSV) 다운로드
+              <button id="btnRefreshDb" class="clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-slate-700 flex items-center gap-1">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600"></i> 새로고침
               </button>
               <button id="btnCloseRecords" class="clay-btn clay-btn-secondary px-2 py-1 text-xs font-semibold text-slate-500">닫기</button>
             </div>
           </div>
           <div id="dbRecordsTable" class="max-h-56 overflow-y-auto space-y-2 text-xs pr-1">
-            <!-- DB 기록 카드들이 동적으로 렌더링됩니다 -->
+            <!-- Supabase 기록 목록이 동적으로 주입됩니다 -->
           </div>
         </div>
       </div>
@@ -1333,12 +1374,17 @@ const SimulationEngine = {
         inR: Math.round(inR)
       };
 
+      const connStatus = window.MathClayDB && MathClayDB.isConnected()
+        ? `<span class="text-emerald-600 font-bold">⚡ Supabase 클라우드 연동됨</span>`
+        : `<span class="text-slate-400 font-bold">로컬 캐시 모드 (Supabase 설정 가능)</span>`;
+
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between flex-wrap gap-1">
             <span>판별: <strong class="${isRight ? 'text-indigo-600' : isObtuse ? 'text-amber-600' : 'text-emerald-600'} font-black">${triType}</strong></span>
-            <span>외심 위치: <strong class="text-indigo-700">${circumDesc}</strong> O(${currentCalc.circumX}, ${currentCalc.circumY})</span>
-            <span>내심 위치: <strong class="text-rose-700">삼각형 내부</strong> I(${currentCalc.inX}, ${currentCalc.inY})</span>
+            <span>외심: <strong class="text-indigo-700">${circumDesc}</strong> O(${currentCalc.circumX}, ${currentCalc.circumY})</span>
+            <span>내심: I(${currentCalc.inX}, ${currentCalc.inY})</span>
+            <span class="text-[11px]">${connStatus}</span>
           </div>
         `;
       }
@@ -1427,16 +1473,19 @@ const SimulationEngine = {
       draw();
     });
 
-    // --- 데이터베이스(IndexedDB) 연동 로직 ---
+    // --- Supabase 연동 제어 로직 ---
     const dbSaveForm = document.getElementById("dbSaveForm");
     const dbRecordsView = document.getElementById("dbRecordsView");
+    const supabaseConfigPanel = document.getElementById("supabaseConfigPanel");
     const dbRecordBadge = document.getElementById("dbRecordBadge");
     const dbCountText = document.getElementById("dbCountText");
     const dbRecordsTable = document.getElementById("dbRecordsTable");
     const dbSaveToast = document.getElementById("dbSaveToast");
     const dbCurrentTypeBadge = document.getElementById("dbCurrentTypeBadge");
+    const supabaseUrlInput = document.getElementById("supabaseUrlInput");
+    const supabaseKeyInput = document.getElementById("supabaseKeyInput");
 
-    // 초기 저장 건수 배지 갱신
+    // 저장 건수 배지 갱신
     async function updateDbBadge() {
       if (!window.MathClayDB) return;
       const records = await MathClayDB.getAllRecords();
@@ -1445,14 +1494,56 @@ const SimulationEngine = {
     }
     updateDbBadge();
 
+    // Supabase 설정 열기
+    document.getElementById("btnOpenSupabaseConfig").addEventListener("click", () => {
+      supabaseConfigPanel.classList.toggle("hidden");
+      dbSaveForm.classList.add("hidden");
+      dbRecordsView.classList.add("hidden");
+
+      if (window.MathClayDB) {
+        const conf = MathClayDB.getConfig();
+        if (supabaseUrlInput) supabaseUrlInput.value = conf.url || "";
+        if (supabaseKeyInput) supabaseKeyInput.value = conf.anonKey || "";
+      }
+    });
+
+    document.getElementById("btnCloseConfig").addEventListener("click", () => {
+      supabaseConfigPanel.classList.add("hidden");
+    });
+
+    // Supabase 설정 저장
+    document.getElementById("btnSaveSupabaseConfig").addEventListener("click", () => {
+      const url = supabaseUrlInput.value.trim();
+      const key = supabaseKeyInput.value.trim();
+      if (window.MathClayDB) {
+        MathClayDB.saveConfig(url, key);
+        supabaseConfigPanel.classList.add("hidden");
+        alert("Supabase 연결 정보가 브라우저에 안전하게 저장되었습니다!");
+        draw();
+        updateDbBadge();
+      }
+    });
+
+    // Supabase SQL 복사
+    document.getElementById("btnCopySql").addEventListener("click", () => {
+      if (window.MathClayDB) {
+        const sql = MathClayDB.getSQLSchema();
+        navigator.clipboard.writeText(sql).then(() => {
+          alert("📋 Supabase SQL 쿼리가 클립보드에 복사되었습니다!\nSupabase Dashboard -> SQL Editor에 붙여넣고 Run을 실행해주세요.");
+        });
+      }
+    });
+
     // 저장 폼 열기
     document.getElementById("btnOpenSaveDb").addEventListener("click", () => {
       dbSaveForm.classList.toggle("hidden");
       dbRecordsView.classList.add("hidden");
+      supabaseConfigPanel.classList.add("hidden");
+
       if (!dbSaveForm.classList.contains("hidden")) {
         dbCurrentTypeBadge.textContent = `${currentCalc.triType} (외심: ${currentCalc.circumDesc})`;
         document.getElementById("inputMemo").value = 
-          `${currentCalc.triType} 상태 탐구 - 외심 위치: ${currentCalc.circumDesc}, 외심 O(${currentCalc.circumX}, ${currentCalc.circumY})`;
+          `${currentCalc.triType} 탐구 - 외심: ${currentCalc.circumDesc}, 외심 O(${currentCalc.circumX}, ${currentCalc.circumY}), 내심 I(${currentCalc.inX}, ${currentCalc.inY})`;
       }
     });
 
@@ -1460,7 +1551,7 @@ const SimulationEngine = {
       dbSaveForm.classList.add("hidden");
     });
 
-    // DB 저장 실행
+    // Supabase DB 저장 실행
     document.getElementById("btnConfirmSave").addEventListener("click", async () => {
       const studentName = document.getElementById("inputStudentName").value.trim() || "학생 탐구자";
       const memo = document.getElementById("inputMemo").value.trim() || "외심/내심 탐구 결과 저장";
@@ -1481,13 +1572,19 @@ const SimulationEngine = {
       };
 
       if (window.MathClayDB) {
-        await MathClayDB.saveRecord(newRecord);
+        const res = await MathClayDB.saveRecord(newRecord);
         dbSaveForm.classList.add("hidden");
 
         // 토스트 알림 표시
         if (dbSaveToast) {
+          if (res.isLocal) {
+            dbSaveToast.innerHTML = '<i data-lucide="info" class="w-3.5 h-3.5 text-amber-500"></i> 임시 저장됨 (Supabase 설정 시 클라우드 동기화)';
+          } else {
+            dbSaveToast.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i> Supabase DB 클라우드 영구 저장 완료!';
+          }
           dbSaveToast.classList.remove("hidden");
-          setTimeout(() => dbSaveToast.classList.add("hidden"), 3000);
+          setTimeout(() => dbSaveToast.classList.add("hidden"), 3500);
+          if (window.lucide) lucide.createIcons();
         }
 
         await updateDbBadge();
@@ -1501,16 +1598,22 @@ const SimulationEngine = {
     document.getElementById("btnToggleDbList").addEventListener("click", async () => {
       dbRecordsView.classList.toggle("hidden");
       dbSaveForm.classList.add("hidden");
+      supabaseConfigPanel.classList.add("hidden");
       if (!dbRecordsView.classList.contains("hidden")) {
         await renderDbRecordsList();
       }
+    });
+
+    document.getElementById("btnRefreshDb").addEventListener("click", async () => {
+      await updateDbBadge();
+      await renderDbRecordsList();
     });
 
     document.getElementById("btnCloseRecords").addEventListener("click", () => {
       dbRecordsView.classList.add("hidden");
     });
 
-    // 저장된 기록 렌더링
+    // Supabase 기록 목록 렌더링
     async function renderDbRecordsList() {
       if (!window.MathClayDB || !dbRecordsTable) return;
       const records = await MathClayDB.getAllRecords();
@@ -1519,8 +1622,8 @@ const SimulationEngine = {
         dbRecordsTable.innerHTML = `
           <div class="text-center py-6 text-slate-400">
             <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-1 opacity-50"></i>
-            <p>아직 데이터베이스에 저장된 탐구 기록이 없습니다.</p>
-            <p class="text-[11px] mt-0.5">'현재 결과 DB 저장' 버튼을 눌러 첫 번째 결과를 저장해보세요!</p>
+            <p>아직 Supabase 데이터베이스에 저장된 탐구 기록이 없습니다.</p>
+            <p class="text-[11px] mt-0.5">'Supabase DB 저장' 버튼을 눌러 첫 번째 결과를 등록해보세요!</p>
           </div>
         `;
         if (window.lucide) lucide.createIcons();
@@ -1534,18 +1637,18 @@ const SimulationEngine = {
             r.triangleType === "둔각삼각형" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700";
 
           return `
-            <div class="clay-inset p-3 rounded-xl bg-slate-50/80 flex items-start justify-between gap-2">
+            <div class="clay-inset p-3 rounded-xl bg-slate-50/90 flex items-start justify-between gap-2 border border-slate-100">
               <div class="space-y-1">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="px-2 py-0.5 rounded-full ${typeBadgeColor} text-[10px] font-black">${r.triangleType}</span>
                   <strong class="text-slate-800 font-bold">${r.studentName || "학생"}</strong>
-                  <span class="text-[10px] text-slate-400">${r.createdDateStr || ""}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">${r.createdDateStr || ""}</span>
                 </div>
                 <div class="text-[11px] text-slate-600 font-medium">
                   외심: <strong class="text-indigo-600">${r.circumLocation || "내부"}</strong> O(${r.circumcenter?.x || 0}, ${r.circumcenter?.y || 0}) 
                   | 내심: I(${r.incenter?.x || 0}, ${r.incenter?.y || 0})
                 </div>
-                <p class="text-[11px] text-slate-500 italic bg-white/70 px-2 py-1 rounded">"${r.memo || "메모 없음"}"</p>
+                <p class="text-[11px] text-slate-600 italic bg-white px-2 py-1 rounded shadow-sm">"${r.memo || "메모 없음"}"</p>
               </div>
               <div class="flex items-center gap-1 shrink-0 pt-1">
                 <button class="btn-load-rec clay-btn clay-btn-primary px-2.5 py-1 text-[11px] font-bold text-white shadow-sm" data-id="${r.id}">
@@ -1562,7 +1665,7 @@ const SimulationEngine = {
 
       if (window.lucide) lucide.createIcons();
 
-      // 불러오기 이벤트 연결
+      // 캔버스 복원 이벤트
       dbRecordsTable.querySelectorAll(".btn-load-rec").forEach((btn) => {
         btn.addEventListener("click", () => {
           const recId = btn.getAttribute("data-id");
@@ -1575,7 +1678,7 @@ const SimulationEngine = {
             canvas.scrollIntoView({ behavior: "smooth", block: "center" });
 
             if (dbSaveToast) {
-              dbSaveToast.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 과거 탐구 기록을 캔버스에 불러왔습니다!';
+              dbSaveToast.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Supabase 기록을 캔버스에 복원했습니다!';
               dbSaveToast.classList.remove("hidden");
               setTimeout(() => dbSaveToast.classList.add("hidden"), 3000);
               if (window.lucide) lucide.createIcons();
@@ -1584,11 +1687,11 @@ const SimulationEngine = {
         });
       });
 
-      // 삭제 이벤트 연결
+      // 삭제 이벤트
       dbRecordsTable.querySelectorAll(".btn-del-rec").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const recId = btn.getAttribute("data-id");
-          if (confirm("이 탐구 기록을 데이터베이스에서 삭제하시겠습니까?")) {
+          if (confirm("이 기록을 Supabase 데이터베이스에서 영구 삭제하시겠습니까?")) {
             await MathClayDB.deleteRecord(recId);
             await updateDbBadge();
             await renderDbRecordsList();
@@ -1596,14 +1699,6 @@ const SimulationEngine = {
         });
       });
     }
-
-    // 엑셀(CSV) 다운로드
-    document.getElementById("btnExportCSV").addEventListener("click", async () => {
-      if (window.MathClayDB) {
-        const records = await MathClayDB.getAllRecords();
-        MathClayDB.exportToCSV(records);
-      }
-    });
   },
 
   /* =========================================================================
