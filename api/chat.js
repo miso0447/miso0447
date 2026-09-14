@@ -30,12 +30,58 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, apiKey: clientKey } = req.body || {};
-    const apiKey = (process.env.OPENAI_API_KEY || req.headers["x-openai-key"] || clientKey || "").trim();
+    let body = req.body || {};
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {}
+    }
+
+    const { messages, apiKey: clientKey } = body;
+
+    // 1. 다양한 환경변수 이름 유연하게 탐색
+    let apiKey = (process.env.OPENAI_API_KEY || "").trim();
 
     if (!apiKey) {
+      for (const [k, v] of Object.entries(process.env)) {
+        const upper = k.toUpperCase();
+        if (
+          upper === "OPENAI_API_KEY" ||
+          upper === "OPENAI_KEY" ||
+          upper === "OPENAI_APIKEY" ||
+          upper === "OPENAI_SECRET_KEY" ||
+          upper === "OPEN_AI_API_KEY" ||
+          upper === "OPEN_AI_KEY" ||
+          upper === "VITE_OPENAI_API_KEY" ||
+          upper === "NEXT_PUBLIC_OPENAI_API_KEY" ||
+          upper.includes("OPENAI")
+        ) {
+          if (v && typeof v === "string" && v.trim()) {
+            apiKey = v.trim();
+            break;
+          }
+        }
+      }
+    }
+
+    // 2. 요청 헤더나 클라이언트 전달 키 확인
+    if (!apiKey) {
+      apiKey = (req.headers["x-openai-key"] || clientKey || "").trim();
+    }
+
+    // 따옴표 제거 (혹시 Vercel 환경변수에 "sk-..." 따옴표가 포함된 경우)
+    if (apiKey) {
+      apiKey = apiKey.replace(/^["']|["']$/g, "").trim();
+    }
+
+    if (!apiKey) {
+      const publicKeys = Object.keys(process.env).filter(
+        k => !k.startsWith("npm_") && !k.startsWith("_") && !k.startsWith("PATH") && !k.startsWith("AWS")
+      );
       return res.status(400).json({
-        error: "OPENAI_API_KEY가 등록되지 않았습니다. Vercel 환경변수에 OPENAI_API_KEY를 등록하거나 챗봇 설정(⚙️)에서 입력해주세요."
+        error: "OPENAI_API_KEY가 Vercel 환경변수에서 감지되지 않았습니다.",
+        details: "Vercel 대시보드 (Settings → Environment Variables)에 Key 이름은 OPENAI_API_KEY 로 등록하고, Environment에 [Production]이 체크되어 있는지 확인해주세요.",
+        detectedEnvNames: publicKeys
       });
     }
 
@@ -72,7 +118,7 @@ export default async function handler(req, res) {
       const errorMessage = data?.error?.message || "OpenAI API 호출 중 오류가 발생했습니다.";
       let userFriendlyMsg = errorMessage;
       if (errorMessage.includes("Incorrect API key") || errorMessage.includes("invalid_api_key")) {
-        userFriendlyMsg = "입력된 OPENAI_API_KEY가 올바르지 않습니다. 키를 다시 확인해 주세요.";
+        userFriendlyMsg = "입력된 OPENAI_API_KEY가 올바르지 않습니다. OpenAI 대시보드에서 키를 확인해 주세요.";
       } else if (errorMessage.includes("quota") || errorMessage.includes("insufficient_quota")) {
         userFriendlyMsg = "OpenAI API 크레딧 할당량(Quota)이 소진되었습니다. 계정 결제 정보를 확인해 주세요.";
       } else if (errorMessage.includes("rate limit")) {

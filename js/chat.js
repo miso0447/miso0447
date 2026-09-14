@@ -240,7 +240,9 @@ const MathClayChat = {
         } else {
           const data = await res.json();
           if (!res.ok) {
-            throw new Error(data.error || `서버 응답 오류 (HTTP ${res.status})`);
+            const customErr = new Error(data.error || `서버 응답 오류 (HTTP ${res.status})`);
+            customErr.details = data.details;
+            throw customErr;
           }
           reply = data.reply;
         }
@@ -259,7 +261,7 @@ const MathClayChat = {
     } catch (err) {
       console.error("챗봇 요청 오류:", err);
       this.removeTypingIndicator();
-      this.appendErrorMessage(err.message || "답변을 가져오는 중 오류가 발생했습니다.");
+      this.appendErrorMessage(err.message || "답변을 가져오는 중 오류가 발생했습니다.", err.details);
     } finally {
       this.isLoading = false;
       this.scrollToBottom();
@@ -330,7 +332,7 @@ const MathClayChat = {
     this.renderKatex(div);
   },
 
-  appendErrorMessage(errorText) {
+  appendErrorMessage(errorText, details) {
     const container = document.getElementById("chatMessages");
     if (!container) return;
 
@@ -340,14 +342,16 @@ const MathClayChat = {
       <div class="w-8 h-8 rounded-full bg-rose-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold shadow-sm">
         !
       </div>
-      <div class="chat-bubble-bot p-3.5 max-w-[85%] text-xs sm:text-sm leading-relaxed border-rose-200 bg-rose-50/70 text-rose-900">
-        <p class="font-bold flex items-center gap-1 text-rose-700 mb-1">
-          <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 안내
+      <div class="chat-bubble-bot p-3.5 max-w-[85%] text-xs sm:text-sm leading-relaxed border-rose-200 bg-rose-50/70 text-rose-900 space-y-2">
+        <p class="font-bold flex items-center gap-1 text-rose-700">
+          <i data-lucide="alert-circle" class="w-4 h-4"></i> 안내
         </p>
-        <p>${this.escapeHtml(errorText)}</p>
-        <div class="mt-2 pt-2 border-t border-rose-200 flex items-center gap-2">
-          <button onclick="MathClayChat.openSettingsModal()" class="px-2.5 py-1 rounded-lg bg-white border border-rose-300 text-[11px] font-bold text-rose-700 hover:bg-rose-50 transition-colors">
-            ⚙️ API 키 설정 확인
+        <p class="font-semibold">${this.escapeHtml(errorText)}</p>
+        ${details ? `<p class="text-[11px] text-slate-600 bg-white/90 p-2.5 rounded-xl border border-rose-100 leading-relaxed">${this.escapeHtml(details)}</p>` : ""}
+        <div class="pt-2 border-t border-rose-200 flex items-center gap-2">
+          <button onclick="MathClayChat.openSettingsModal()" class="clay-btn clay-btn-primary px-3.5 py-1.5 text-xs font-bold text-white shadow-sm flex items-center gap-1">
+            <i data-lucide="key" class="w-3.5 h-3.5"></i>
+            <span>⚙️ API 키 직접 입력하기</span>
           </button>
         </div>
       </div>
