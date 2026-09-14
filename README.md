@@ -52,10 +52,15 @@
      memo TEXT
    );
 
-   -- RLS 공개 접근 허용 (수업용)
+   -- RLS 공개 접근 허용 (수업용, 기존 정책이 있으면 덮어쓰기)
    ALTER TABLE incenter_records ENABLE ROW LEVEL SECURITY;
+   DROP POLICY IF EXISTS "Allow public read" ON incenter_records;
    CREATE POLICY "Allow public read" ON incenter_records FOR SELECT USING (true);
+
+   DROP POLICY IF EXISTS "Allow public insert" ON incenter_records;
    CREATE POLICY "Allow public insert" ON incenter_records FOR INSERT WITH CHECK (true);
+
+   DROP POLICY IF EXISTS "Allow public delete" ON incenter_records;
    CREATE POLICY "Allow public delete" ON incenter_records FOR DELETE USING (true);
    ```
 3. Supabase 대시보드의 **Project Settings -> API**에서 **Project URL**과 **anon/public API Key**를 복사합니다.
