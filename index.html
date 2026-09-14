@@ -87,6 +87,12 @@
           <kbd class="hidden xl:inline-block text-[10px] bg-white/70 text-slate-500 font-bold px-1.5 py-0.5 rounded shadow-sm">Ctrl K</kbd>
         </div>
 
+        <!-- Supabase Settings Shortcut Button in Navigation Bar -->
+        <button id="navSupabaseBtn" class="clay-btn clay-btn-secondary text-xs sm:text-sm px-3.5 py-2 text-emerald-800 bg-emerald-50 border border-emerald-300 font-bold flex items-center gap-1.5 shadow-sm hover:bg-emerald-100 transition-colors">
+          <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+          <span>⚙️ Supabase 설정</span>
+        </button>
+
         <!-- Submit Tip Button -->
         <a href="#teachertips" class="hidden sm:inline-flex clay-btn clay-btn-secondary text-xs sm:text-sm px-4 py-2 text-slate-700 font-medium">
           <i data-lucide="book-open-check" class="w-4 h-4 mr-1.5 text-indigo-600"></i>
@@ -113,6 +119,10 @@
         <input type="text" placeholder="단원 키워드 검색..." class="bg-transparent text-sm w-full outline-none text-slate-700" />
       </div>
       <div class="flex flex-col space-y-2 text-sm font-semibold text-slate-600">
+        <button id="mobileNavSupabaseBtn" class="clay-btn clay-btn-secondary py-2.5 px-4 text-left text-emerald-800 bg-emerald-50 border border-emerald-300 font-bold flex items-center gap-2">
+          <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+          <span>⚙️ Supabase DB 설정 바로가기</span>
+        </button>
         <a href="#hero" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">홈</a>
         <a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-4 py-2.5 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition">중1 시뮬레이션</a>
         <a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-4 py-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition">중2 시뮬레이션</a>
@@ -835,9 +845,15 @@
           </h3>
         </div>
 
-        <button id="modalCloseBtn" class="clay-btn clay-btn-secondary p-2 text-slate-500 hover:text-slate-800 focus:outline-none" aria-label="닫기">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="modalHeaderSupabaseBtn" class="hidden clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-black text-emerald-800 bg-emerald-50 border border-emerald-300 flex items-center gap-1.5 shadow-sm hover:bg-emerald-100 transition-all cursor-pointer">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span>⚙️ Supabase 설정</span>
+          </button>
+          <button id="modalCloseBtn" class="clay-btn clay-btn-secondary p-2 text-slate-500 hover:text-slate-800 focus:outline-none" aria-label="닫기">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Main Interactive Canvas Viewport -->
@@ -889,10 +905,10 @@
   <!-- Supabase Official Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Database Management (Supabase Cloud DB) -->
-  <script src="js/db.js"></script>
+  <script src="js/db.js?v=20260914_3"></script>
   <!-- Simulations Interactive Engine -->
-  <script src="js/simulations.js"></script>
+  <script src="js/simulations.js?v=20260914_3"></script>
   <!-- Custom Application Script -->
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=20260914_3"></script>
 </body>
 </html>

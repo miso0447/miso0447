@@ -392,6 +392,10 @@ function initSimulationModal() {
     }
   };
 
+  const modalHeaderSupabaseBtn = document.getElementById("modalHeaderSupabaseBtn");
+  const navSupabaseBtn = document.getElementById("navSupabaseBtn");
+  const mobileNavSupabaseBtn = document.getElementById("mobileNavSupabaseBtn");
+
   function openSim(simId) {
     const data = middleSimData[simId];
     if (!data) return;
@@ -401,6 +405,16 @@ function initSimulationModal() {
     if (modalDesc) modalDesc.textContent = data.desc;
     if (modalPoint) modalPoint.textContent = data.teachingPoint;
 
+    // 외심/내심 시뮬레이션일 때만 모달 우측 상단에 Supabase 설정 버튼 노출
+    if (modalHeaderSupabaseBtn) {
+      if (simId === "incenter") {
+        modalHeaderSupabaseBtn.classList.remove("hidden");
+      } else {
+        modalHeaderSupabaseBtn.classList.add("hidden");
+      }
+    }
+    if (window.lucide) lucide.createIcons();
+
     modal.classList.remove("hidden");
     modal.classList.add("flex");
 
@@ -408,6 +422,42 @@ function initSimulationModal() {
     setTimeout(() => {
       data.mount(modalCanvas, modalControls, modalInfo);
     }, 60);
+  }
+
+  // 모달 헤더 Supabase 설정 버튼 클릭 시 설정 패널 토글 & 스크롤
+  if (modalHeaderSupabaseBtn) {
+    modalHeaderSupabaseBtn.addEventListener("click", () => {
+      const cfg = document.getElementById("supabaseConfigPanel");
+      if (cfg) {
+        cfg.classList.toggle("hidden");
+        if (!cfg.classList.contains("hidden")) {
+          cfg.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    });
+  }
+
+  // 메인 네비게이션 바 Supabase 설정 버튼 클릭 시 외심/내심 열고 바로 설정창 펼치기
+  function openSupabaseSettingsGlobal() {
+    openSim("incenter");
+    setTimeout(() => {
+      const cfg = document.getElementById("supabaseConfigPanel");
+      if (cfg) {
+        cfg.classList.remove("hidden");
+        cfg.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 250);
+  }
+
+  if (navSupabaseBtn) {
+    navSupabaseBtn.addEventListener("click", openSupabaseSettingsGlobal);
+  }
+  if (mobileNavSupabaseBtn) {
+    mobileNavSupabaseBtn.addEventListener("click", () => {
+      const mobileMenu = document.getElementById("mobileMenuDrawer");
+      if (mobileMenu) mobileMenu.classList.add("hidden");
+      openSupabaseSettingsGlobal();
+    });
   }
 
   // 카드 내 '교구 실행' 버튼 클릭 시 오픈
@@ -432,6 +482,9 @@ function initSimulationModal() {
 
   function closeModal() {
     SimulationEngine.stop();
+    if (modalHeaderSupabaseBtn) {
+      modalHeaderSupabaseBtn.classList.add("hidden");
+    }
     modal.classList.add("hidden");
     modal.classList.remove("flex");
   }

@@ -1096,6 +1096,29 @@ const SimulationEngine = {
 
     controlsEl.innerHTML = `
       <div class="space-y-3">
+        <!-- Supabase 클라우드 DB 상태 및 설정 안내 배너 -->
+        <div id="bannerSupabaseNotice" class="p-3 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border-2 border-emerald-300 flex items-center justify-between gap-3 shadow-sm">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow">
+              ⚡
+            </span>
+            <div class="text-xs">
+              <div class="flex items-center gap-2">
+                <strong class="text-emerald-950 font-black text-sm">Supabase 클라우드 데이터베이스</strong>
+                <span id="bannerDbStatusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
+                  확인 중...
+                </span>
+              </div>
+              <p id="bannerDbStatusDesc" class="text-[11px] text-slate-600 mt-0.5 font-medium">
+                URL과 anon Key를 등록하면 학생들의 탐구 결과가 Supabase에 실시간 영구 저장됩니다.
+              </p>
+            </div>
+          </div>
+          <button id="btnBannerOpenConfig" class="clay-btn clay-btn-primary px-3.5 py-1.5 text-xs font-black text-white shrink-0 shadow hover:scale-105 transition-all">
+            ⚙️ Supabase 설정 열기
+          </button>
+        </div>
+
         <!-- Row 1: 작도 옵션 및 프리셋 -->
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-4 text-xs font-bold text-slate-700">
@@ -1124,8 +1147,8 @@ const SimulationEngine = {
             <button id="btnToggleDbList" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold text-indigo-700 flex items-center gap-1.5">
               <i data-lucide="database" class="w-3.5 h-3.5"></i> Supabase 기록 보기 <span id="dbRecordBadge" class="ml-1 px-1.5 py-0.2 bg-indigo-100 rounded-full text-[10px] font-mono">0건</span>
             </button>
-            <button id="btnOpenSupabaseConfig" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-slate-700 flex items-center gap-1 hover:bg-slate-100">
-              <i data-lucide="settings" class="w-3.5 h-3.5 text-indigo-600"></i> Supabase 설정
+            <button id="btnOpenSupabaseConfig" class="clay-btn px-3.5 py-1.5 text-xs font-black text-emerald-800 bg-emerald-100 border-2 border-emerald-400 flex items-center gap-1.5 hover:bg-emerald-200 shadow-sm transition-transform active:scale-95">
+              <i data-lucide="settings" class="w-4 h-4 text-emerald-700"></i> ⚙️ Supabase 설정 & SQL
             </button>
           </div>
           <div id="dbSaveToast" class="hidden text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 animate-bounce">
@@ -1374,19 +1397,33 @@ const SimulationEngine = {
         inR: Math.round(inR)
       };
 
-      const connStatus = window.MathClayDB && MathClayDB.isConnected()
-        ? `<span class="text-emerald-600 font-bold">⚡ Supabase 클라우드 연동됨</span>`
-        : `<span class="text-slate-400 font-bold">로컬 캐시 모드 (Supabase 설정 가능)</span>`;
+      const isDbConn = window.MathClayDB && MathClayDB.isConnected();
+      const connStatus = isDbConn
+        ? `<span class="text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200">⚡ Supabase 클라우드 연동됨</span>`
+        : `<button id="btnInfoConfig" class="text-rose-600 bg-rose-50 hover:bg-rose-100 px-2.5 py-0.5 rounded-full font-bold border border-rose-200 transition-colors cursor-pointer flex items-center gap-1">⚠️ Supabase 미연동 (여기를 눌러 설정)</button>`;
 
       if (infoEl) {
         infoEl.innerHTML = `
-          <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between flex-wrap gap-1">
-            <span>판별: <strong class="${isRight ? 'text-indigo-600' : isObtuse ? 'text-amber-600' : 'text-emerald-600'} font-black">${triType}</strong></span>
-            <span>외심: <strong class="text-indigo-700">${circumDesc}</strong> O(${currentCalc.circumX}, ${currentCalc.circumY})</span>
-            <span>내심: I(${currentCalc.inX}, ${currentCalc.inY})</span>
-            <span class="text-[11px]">${connStatus}</span>
+          <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span>판별: <strong class="${isRight ? 'text-indigo-600' : isObtuse ? 'text-amber-600' : 'text-emerald-600'} font-black">${triType}</strong></span>
+              <span>외심: <strong class="text-indigo-700">${circumDesc}</strong> O(${currentCalc.circumX}, ${currentCalc.circumY})</span>
+              <span>내심: I(${currentCalc.inX}, ${currentCalc.inY})</span>
+            </div>
+            <div class="text-[11px]">${connStatus}</div>
           </div>
         `;
+
+        const btnInfoConfig = document.getElementById("btnInfoConfig");
+        if (btnInfoConfig) {
+          btnInfoConfig.addEventListener("click", () => {
+            const cfg = document.getElementById("supabaseConfigPanel");
+            if (cfg) {
+              cfg.classList.remove("hidden");
+              cfg.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          });
+        }
       }
     };
 
@@ -1485,17 +1522,34 @@ const SimulationEngine = {
     const supabaseUrlInput = document.getElementById("supabaseUrlInput");
     const supabaseKeyInput = document.getElementById("supabaseKeyInput");
 
-    // 저장 건수 배지 갱신
+    const bannerDbStatusBadge = document.getElementById("bannerDbStatusBadge");
+    const bannerDbStatusDesc = document.getElementById("bannerDbStatusDesc");
+    const btnBannerOpenConfig = document.getElementById("btnBannerOpenConfig");
+
+    // 저장 건수 및 연결 상태 배지 갱신
     async function updateDbBadge() {
       if (!window.MathClayDB) return;
       const records = await MathClayDB.getAllRecords();
       if (dbRecordBadge) dbRecordBadge.textContent = `${records.length}건`;
       if (dbCountText) dbCountText.textContent = records.length;
+
+      const isConn = MathClayDB.isConnected();
+      if (bannerDbStatusBadge) {
+        bannerDbStatusBadge.className = `px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isConn ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`;
+        bannerDbStatusBadge.textContent = isConn ? '⚡ 연동 완료' : '⚠️ 미연결 (설정 필요)';
+      }
+      if (bannerDbStatusDesc) {
+        bannerDbStatusDesc.textContent = isConn
+          ? 'Supabase 클라우드와 정상 연결되어 모든 탐구 결과가 실시간 동기화됩니다.'
+          : 'URL과 anon Key를 등록하면 학생들의 외심/내심 탐구 결과가 Supabase에 영구 저장됩니다.';
+      }
+      if (btnBannerOpenConfig) {
+        btnBannerOpenConfig.textContent = isConn ? '⚙️ 설정 변경' : '⚙️ Supabase 설정 열기';
+      }
     }
     updateDbBadge();
 
-    // Supabase 설정 열기
-    document.getElementById("btnOpenSupabaseConfig").addEventListener("click", () => {
+    function openConfigDrawer() {
       supabaseConfigPanel.classList.toggle("hidden");
       dbSaveForm.classList.add("hidden");
       dbRecordsView.classList.add("hidden");
@@ -1505,7 +1559,16 @@ const SimulationEngine = {
         if (supabaseUrlInput) supabaseUrlInput.value = conf.url || "";
         if (supabaseKeyInput) supabaseKeyInput.value = conf.anonKey || "";
       }
-    });
+      if (!supabaseConfigPanel.classList.contains("hidden")) {
+        supabaseConfigPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+
+    // Supabase 설정 열기 버튼들
+    document.getElementById("btnOpenSupabaseConfig").addEventListener("click", openConfigDrawer);
+    if (btnBannerOpenConfig) {
+      btnBannerOpenConfig.addEventListener("click", openConfigDrawer);
+    }
 
     document.getElementById("btnCloseConfig").addEventListener("click", () => {
       supabaseConfigPanel.classList.add("hidden");
