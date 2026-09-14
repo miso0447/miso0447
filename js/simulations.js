@@ -1070,7 +1070,7 @@ const SimulationEngine = {
   },
 
   /* =========================================================================
-   * 6. [중2 기하] 삼각형의 외심과 내심 실시간 작도기 (터치/마우스 드래그 & 이등분선)
+   * 6. [중2 기하] 삼각형의 외심과 내심 실시간 작도기 (데이터베이스 저장 & 불러오기 지원)
    * ========================================================================= */
   mountIncenter(canvas, controlsEl, infoEl) {
     this.stop();
@@ -1085,8 +1085,18 @@ const SimulationEngine = {
     let showCircum = true;
     let showIn = true;
 
+    // 현재 기하 계산 상태
+    let currentCalc = {
+      triType: "예각삼각형",
+      circumDesc: "삼각형 내부",
+      a: 0, b: 0, c: 0,
+      circumX: 0, circumY: 0, circumR: 0,
+      inX: 0, inY: 0, inR: 0
+    };
+
     controlsEl.innerHTML = `
       <div class="space-y-3">
+        <!-- Row 1: 작도 옵션 및 프리셋 -->
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-4 text-xs font-bold text-slate-700">
             <label class="flex items-center gap-1.5 cursor-pointer">
@@ -1104,8 +1114,64 @@ const SimulationEngine = {
             <button id="btnObtuse" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-amber-700">둔각(외부)</button>
           </div>
         </div>
+
+        <!-- Row 2: 데이터베이스 저장 & 기록 툴바 -->
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-200">
+          <div class="flex items-center gap-2">
+            <button id="btnOpenSaveDb" class="clay-btn clay-btn-primary px-3.5 py-1.5 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+              <i data-lucide="database" class="w-3.5 h-3.5"></i> 현재 결과 DB 저장
+            </button>
+            <button id="btnToggleDbList" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold text-indigo-700 flex items-center gap-1.5">
+              <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> 저장된 DB 기록 보기 <span id="dbRecordBadge" class="ml-1 px-1.5 py-0.2 bg-indigo-100 rounded-full text-[10px] font-mono">0건</span>
+            </button>
+          </div>
+          <div id="dbSaveToast" class="hidden text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 animate-bounce">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> DB 저장 완료!
+          </div>
+        </div>
+
+        <!-- Row 3: DB 저장 인라인 폼 (열림/닫힘) -->
+        <div id="dbSaveForm" class="hidden p-3.5 rounded-2xl bg-white border border-indigo-100 clay-card space-y-2.5">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-800">
+            <span class="flex items-center gap-1 text-indigo-700 font-black"><i data-lucide="save" class="w-3.5 h-3.5"></i> 탐구 결과 데이터베이스에 저장</span>
+            <span id="dbCurrentTypeBadge" class="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold">삼각형 판별 중...</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">학생 / 모둠명</label>
+              <input type="text" id="inputStudentName" placeholder="예: 2학년 3반 1모둠" class="w-full clay-inset px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">탐구 관찰 메모</label>
+              <input type="text" id="inputMemo" placeholder="예: 직각삼각형일 때 외심이 빗변의 정중앙에 위치함" class="w-full clay-inset px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none">
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-2 pt-1">
+            <button id="btnCancelSave" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-semibold text-slate-600">취소</button>
+            <button id="btnConfirmSave" class="clay-btn clay-btn-primary px-4 py-1 text-xs font-bold text-white">데이터베이스에 저장</button>
+          </div>
+        </div>
+
+        <!-- Row 4: 저장된 DB 기록 목록 뷰 -->
+        <div id="dbRecordsView" class="hidden p-3.5 rounded-2xl bg-white border border-slate-200 clay-card space-y-2.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="server" class="w-4 h-4 text-indigo-600"></i> 외심/내심 DB 저장 기록 (<span id="dbCountText">0</span>건)
+            </span>
+            <div class="flex items-center gap-2">
+              <button id="btnExportCSV" class="clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-emerald-700 flex items-center gap-1">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> 엑셀(CSV) 다운로드
+              </button>
+              <button id="btnCloseRecords" class="clay-btn clay-btn-secondary px-2 py-1 text-xs font-semibold text-slate-500">닫기</button>
+            </div>
+          </div>
+          <div id="dbRecordsTable" class="max-h-56 overflow-y-auto space-y-2 text-xs pr-1">
+            <!-- DB 기록 카드들이 동적으로 렌더링됩니다 -->
+          </div>
+        </div>
       </div>
     `;
+    if (window.lucide) lucide.createIcons();
 
     const draw = () => {
       if (SimulationEngine.currentSim !== "incenter") return;
@@ -1127,7 +1193,7 @@ const SimulationEngine = {
       ctx.lineWidth = 3.5;
       ctx.stroke();
 
-      // 세 변의 길이
+      // 세 변의 길이 (a: BC대변, b: AC대변, c: AB대변)
       const a = Math.hypot(B.x - C.x, B.y - C.y);
       const b = Math.hypot(A.x - C.x, A.y - C.y);
       const c = Math.hypot(A.x - B.x, A.y - B.y);
@@ -1159,7 +1225,6 @@ const SimulationEngine = {
 
       // 1. 외심 작도선(세 변의 수직이등분선) & 외접원
       if (showCircum && circumR > 0 && circumR < 600) {
-        // 수직이등분선 표시 (점선)
         const midAB = { x: (A.x + B.x) / 2, y: (A.y + B.y) / 2 };
         const midBC = { x: (B.x + C.x) / 2, y: (B.y + C.y) / 2 };
         const midCA = { x: (C.x + A.x) / 2, y: (C.y + A.y) / 2 };
@@ -1247,15 +1312,33 @@ const SimulationEngine = {
         ctx.fillText(pt.name, pt.x - 5, pt.y - 14);
       });
 
-      // 판별 안내
-      const isRight = Math.abs(a * a + b * b - c * c) < 200 || Math.abs(b * b + c * c - a * a) < 200 || Math.abs(c * c + a * a - b * b) < 200;
+      // 삼각형 종류 및 외심 위치 판별
+      const sidesSq = [a * a, b * b, c * c].sort((x, y) => x - y);
+      const isRight = Math.abs(sidesSq[0] + sidesSq[1] - sidesSq[2]) < 350;
+      const isObtuse = !isRight && sidesSq[0] + sidesSq[1] < sidesSq[2];
+      const triType = isRight ? "직각삼각형" : isObtuse ? "둔각삼각형" : "예각삼각형";
+      const circumDesc = isRight ? "빗변의 중점" : isObtuse ? "삼각형 외부" : "삼각형 내부";
+
+      currentCalc = {
+        triType,
+        circumDesc,
+        a: Math.round(a),
+        b: Math.round(b),
+        c: Math.round(c),
+        circumX: Math.round(circumX),
+        circumY: Math.round(circumY),
+        circumR: Math.round(circumR),
+        inX: Math.round(inX),
+        inY: Math.round(inY),
+        inR: Math.round(inR)
+      };
 
       if (infoEl) {
         infoEl.innerHTML = `
-          <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
-            꼭짓점 A, B, C를 드래그해보세요! | 
-            <span class="text-indigo-600">외심: ${isRight ? "★ 직각삼각형 빗변의 중점!" : "세 변의 수직이등분선 교점"}</span> | 
-            <span class="text-rose-600">내심: 항상 삼각형 내부 (각의 이등분선 교점)</span>
+          <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between flex-wrap gap-1">
+            <span>판별: <strong class="${isRight ? 'text-indigo-600' : isObtuse ? 'text-amber-600' : 'text-emerald-600'} font-black">${triType}</strong></span>
+            <span>외심 위치: <strong class="text-indigo-700">${circumDesc}</strong> O(${currentCalc.circumX}, ${currentCalc.circumY})</span>
+            <span>내심 위치: <strong class="text-rose-700">삼각형 내부</strong> I(${currentCalc.inX}, ${currentCalc.inY})</span>
           </div>
         `;
       }
@@ -1263,7 +1346,7 @@ const SimulationEngine = {
 
     draw();
 
-    // 마우스 및 터치 이벤트 핸들러 통합
+    // 포인터 이벤트 (마우스 + 모바일 터치)
     function getPointerPos(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1312,16 +1395,7 @@ const SimulationEngine = {
       window.removeEventListener("touchend", onPointerUp);
     };
 
-    document.getElementById("chkCircum").addEventListener("change", (e) => {
-      showCircum = e.target.checked;
-      draw();
-    });
-
-    document.getElementById("chkIncenter").addEventListener("change", (e) => {
-      showIn = e.target.checked;
-      draw();
-    });
-
+    // 프리셋 버튼
     document.getElementById("btnAcute").addEventListener("click", () => {
       pts[0] = { x: 200, y: 60, name: "A" };
       pts[1] = { x: 80, y: 250, name: "B" };
@@ -1341,6 +1415,194 @@ const SimulationEngine = {
       pts[1] = { x: 60, y: 250, name: "B" };
       pts[2] = { x: 340, y: 250, name: "C" };
       draw();
+    });
+
+    document.getElementById("chkCircum").addEventListener("change", (e) => {
+      showCircum = e.target.checked;
+      draw();
+    });
+
+    document.getElementById("chkIncenter").addEventListener("change", (e) => {
+      showIn = e.target.checked;
+      draw();
+    });
+
+    // --- 데이터베이스(IndexedDB) 연동 로직 ---
+    const dbSaveForm = document.getElementById("dbSaveForm");
+    const dbRecordsView = document.getElementById("dbRecordsView");
+    const dbRecordBadge = document.getElementById("dbRecordBadge");
+    const dbCountText = document.getElementById("dbCountText");
+    const dbRecordsTable = document.getElementById("dbRecordsTable");
+    const dbSaveToast = document.getElementById("dbSaveToast");
+    const dbCurrentTypeBadge = document.getElementById("dbCurrentTypeBadge");
+
+    // 초기 저장 건수 배지 갱신
+    async function updateDbBadge() {
+      if (!window.MathClayDB) return;
+      const records = await MathClayDB.getAllRecords();
+      if (dbRecordBadge) dbRecordBadge.textContent = `${records.length}건`;
+      if (dbCountText) dbCountText.textContent = records.length;
+    }
+    updateDbBadge();
+
+    // 저장 폼 열기
+    document.getElementById("btnOpenSaveDb").addEventListener("click", () => {
+      dbSaveForm.classList.toggle("hidden");
+      dbRecordsView.classList.add("hidden");
+      if (!dbSaveForm.classList.contains("hidden")) {
+        dbCurrentTypeBadge.textContent = `${currentCalc.triType} (외심: ${currentCalc.circumDesc})`;
+        document.getElementById("inputMemo").value = 
+          `${currentCalc.triType} 상태 탐구 - 외심 위치: ${currentCalc.circumDesc}, 외심 O(${currentCalc.circumX}, ${currentCalc.circumY})`;
+      }
+    });
+
+    document.getElementById("btnCancelSave").addEventListener("click", () => {
+      dbSaveForm.classList.add("hidden");
+    });
+
+    // DB 저장 실행
+    document.getElementById("btnConfirmSave").addEventListener("click", async () => {
+      const studentName = document.getElementById("inputStudentName").value.trim() || "학생 탐구자";
+      const memo = document.getElementById("inputMemo").value.trim() || "외심/내심 탐구 결과 저장";
+
+      const newRecord = {
+        studentName,
+        triangleType: currentCalc.triType,
+        circumLocation: currentCalc.circumDesc,
+        vertices: {
+          A: { x: pts[0].x, y: pts[0].y },
+          B: { x: pts[1].x, y: pts[1].y },
+          C: { x: pts[2].x, y: pts[2].y }
+        },
+        sideLengths: { a: currentCalc.a, b: currentCalc.b, c: currentCalc.c },
+        circumcenter: { x: currentCalc.circumX, y: currentCalc.circumY, r: currentCalc.circumR },
+        incenter: { x: currentCalc.inX, y: currentCalc.inY, r: currentCalc.inR },
+        memo
+      };
+
+      if (window.MathClayDB) {
+        await MathClayDB.saveRecord(newRecord);
+        dbSaveForm.classList.add("hidden");
+
+        // 토스트 알림 표시
+        if (dbSaveToast) {
+          dbSaveToast.classList.remove("hidden");
+          setTimeout(() => dbSaveToast.classList.add("hidden"), 3000);
+        }
+
+        await updateDbBadge();
+        if (!dbRecordsView.classList.contains("hidden")) {
+          await renderDbRecordsList();
+        }
+      }
+    });
+
+    // 저장된 기록 목록 토글
+    document.getElementById("btnToggleDbList").addEventListener("click", async () => {
+      dbRecordsView.classList.toggle("hidden");
+      dbSaveForm.classList.add("hidden");
+      if (!dbRecordsView.classList.contains("hidden")) {
+        await renderDbRecordsList();
+      }
+    });
+
+    document.getElementById("btnCloseRecords").addEventListener("click", () => {
+      dbRecordsView.classList.add("hidden");
+    });
+
+    // 저장된 기록 렌더링
+    async function renderDbRecordsList() {
+      if (!window.MathClayDB || !dbRecordsTable) return;
+      const records = await MathClayDB.getAllRecords();
+
+      if (records.length === 0) {
+        dbRecordsTable.innerHTML = `
+          <div class="text-center py-6 text-slate-400">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-1 opacity-50"></i>
+            <p>아직 데이터베이스에 저장된 탐구 기록이 없습니다.</p>
+            <p class="text-[11px] mt-0.5">'현재 결과 DB 저장' 버튼을 눌러 첫 번째 결과를 저장해보세요!</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      dbRecordsTable.innerHTML = records
+        .map((r) => {
+          const typeBadgeColor = 
+            r.triangleType === "직각삼각형" ? "bg-indigo-100 text-indigo-700" :
+            r.triangleType === "둔각삼각형" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700";
+
+          return `
+            <div class="clay-inset p-3 rounded-xl bg-slate-50/80 flex items-start justify-between gap-2">
+              <div class="space-y-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-full ${typeBadgeColor} text-[10px] font-black">${r.triangleType}</span>
+                  <strong class="text-slate-800 font-bold">${r.studentName || "학생"}</strong>
+                  <span class="text-[10px] text-slate-400">${r.createdDateStr || ""}</span>
+                </div>
+                <div class="text-[11px] text-slate-600 font-medium">
+                  외심: <strong class="text-indigo-600">${r.circumLocation || "내부"}</strong> O(${r.circumcenter?.x || 0}, ${r.circumcenter?.y || 0}) 
+                  | 내심: I(${r.incenter?.x || 0}, ${r.incenter?.y || 0})
+                </div>
+                <p class="text-[11px] text-slate-500 italic bg-white/70 px-2 py-1 rounded">"${r.memo || "메모 없음"}"</p>
+              </div>
+              <div class="flex items-center gap-1 shrink-0 pt-1">
+                <button class="btn-load-rec clay-btn clay-btn-primary px-2.5 py-1 text-[11px] font-bold text-white shadow-sm" data-id="${r.id}">
+                  불러오기
+                </button>
+                <button class="btn-del-rec clay-btn clay-btn-secondary px-2 py-1 text-[11px] text-rose-600 hover:bg-rose-50" data-id="${r.id}">
+                  삭제
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      if (window.lucide) lucide.createIcons();
+
+      // 불러오기 이벤트 연결
+      dbRecordsTable.querySelectorAll(".btn-load-rec").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const recId = btn.getAttribute("data-id");
+          const target = records.find((r) => r.id === recId);
+          if (target && target.vertices) {
+            pts[0] = { ...target.vertices.A, name: "A" };
+            pts[1] = { ...target.vertices.B, name: "B" };
+            pts[2] = { ...target.vertices.C, name: "C" };
+            draw();
+            canvas.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            if (dbSaveToast) {
+              dbSaveToast.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 과거 탐구 기록을 캔버스에 불러왔습니다!';
+              dbSaveToast.classList.remove("hidden");
+              setTimeout(() => dbSaveToast.classList.add("hidden"), 3000);
+              if (window.lucide) lucide.createIcons();
+            }
+          }
+        });
+      });
+
+      // 삭제 이벤트 연결
+      dbRecordsTable.querySelectorAll(".btn-del-rec").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const recId = btn.getAttribute("data-id");
+          if (confirm("이 탐구 기록을 데이터베이스에서 삭제하시겠습니까?")) {
+            await MathClayDB.deleteRecord(recId);
+            await updateDbBadge();
+            await renderDbRecordsList();
+          }
+        });
+      });
+    }
+
+    // 엑셀(CSV) 다운로드
+    document.getElementById("btnExportCSV").addEventListener("click", async () => {
+      if (window.MathClayDB) {
+        const records = await MathClayDB.getAllRecords();
+        MathClayDB.exportToCSV(records);
+      }
     });
   },
 
