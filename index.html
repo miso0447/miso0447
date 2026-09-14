@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MathClay 중학수학 - 중학교 수학교사를 위한 인터랙티브 시뮬레이션 랩</title>
+  <meta name="description" content="중학교 1~3학년 수학 교육과정 전용 인터랙티브 시뮬레이션 플랫폼. 일차함수, 피타고라스 정리, 삼각비, 확률과 통계를 전자칠판과 태블릿에서 직접 조작하며 수업하세요." />
+
+  <!-- Google Fonts & Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            clay: {
+              bg: '#f0f4f9',
+              card: '#eaf0f8',
+              purple: '#7c3aed',
+              indigo: '#4f46e5',
+              pink: '#ec4899',
+              cyan: '#06b6d4',
+              amber: '#f59e0b',
+              emerald: '#10b981'
+            }
+          },
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Claymorphism Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-mesh min-h-screen text-slate-800 antialiased selection:bg-indigo-200 selection:text-indigo-900">
+
+  <!-- 3D Floating Decorative Geometric Elements -->
+  <div class="fixed top-20 left-10 w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-300 to-teal-200 clay-sphere pointer-events-none opacity-40 animate-float-1 z-0"></div>
+  <div class="fixed bottom-24 right-12 w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-300 to-purple-200 clay-sphere pointer-events-none opacity-40 animate-float-2 z-0"></div>
+  <div class="fixed top-1/2 left-4 w-10 h-10 rounded-full bg-gradient-to-tr from-amber-300 to-orange-200 clay-sphere pointer-events-none opacity-30 animate-pulse-soft z-0"></div>
+
+  <!-- =========================================================
+       1. TOP NAVIGATION BAR (중학교 수학교사용 스티키 네비게이션)
+       ========================================================= -->
+  <header class="sticky top-4 z-50 px-4 sm:px-8 max-w-7xl mx-auto">
+    <nav class="clay-nav px-5 py-3.5 flex items-center justify-between transition-all">
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md transform group-hover:scale-105 transition-transform duration-300">
+          <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xl font-black tracking-tight text-slate-900">MathClay <span class="text-indigo-600">중학수학</span></span>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 tracking-wider">교사용</span>
+          </div>
+          <span class="text-[11px] font-medium text-slate-500 hidden sm:inline">중1~중3 인터랙티브 수업 교구 랩</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Menu: 중1, 중2, 중3 학년별 바로가기 -->
+      <ul class="hidden md:flex items-center gap-1 lg:gap-2 text-sm font-bold text-slate-600">
+        <li><a href="#hero" class="px-3.5 py-2 rounded-full hover:text-indigo-600 hover:bg-white/60 transition-all duration-200">홈</a></li>
+        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-3 py-2 rounded-full hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>중1 과정</a></li>
+        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-3 py-2 rounded-full hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span>중2 과정</a></li>
+        <li><a href="#simulations" onclick="document.querySelector('[data-filter=grade3]').click()" class="px-3 py-2 rounded-full hover:text-purple-700 hover:bg-purple-50 transition-all duration-200 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span>중3 과정</a></li>
+        <li><a href="#teachertips" class="px-3.5 py-2 rounded-full hover:text-indigo-600 hover:bg-white/60 transition-all duration-200">수업 활용팁</a></li>
+      </ul>
+
+      <!-- Search & CTA Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Sunken Clay Search Bar (중학교 단원 검색) -->
+        <div class="hidden lg:flex items-center clay-inset px-3.5 py-1.5 w-60">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+          <input 
+            type="text" 
+            id="simSearchInput" 
+            placeholder="기울기, 피타고라스, 삼각비..." 
+            class="bg-transparent text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none w-full"
+          />
+          <kbd class="hidden xl:inline-block text-[10px] bg-white/70 text-slate-500 font-bold px-1.5 py-0.5 rounded shadow-sm">Ctrl K</kbd>
+        </div>
+
+        <!-- Submit Tip Button -->
+        <a href="#teachertips" class="hidden sm:inline-flex clay-btn clay-btn-secondary text-xs sm:text-sm px-4 py-2 text-slate-700 font-medium">
+          <i data-lucide="book-open-check" class="w-4 h-4 mr-1.5 text-indigo-600"></i>
+          수업 팁
+        </a>
+
+        <!-- Main Action Button -->
+        <a href="#simulations" class="clay-btn clay-btn-primary text-xs sm:text-sm px-4 sm:px-5 py-2 font-semibold">
+          <span>교구 모음</span>
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 ml-1.5"></i>
+        </a>
+
+        <!-- Mobile Hamburger Button -->
+        <button id="mobileMenuToggle" class="md:hidden clay-btn clay-btn-secondary p-2.5 text-slate-600 focus:outline-none" aria-label="메뉴 열기">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileMenuDrawer" class="hidden md:hidden mt-3 clay-card p-5 space-y-4">
+      <div class="clay-inset flex items-center px-4 py-2.5">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+        <input type="text" placeholder="단원 키워드 검색..." class="bg-transparent text-sm w-full outline-none text-slate-700" />
+      </div>
+      <div class="flex flex-col space-y-2 text-sm font-semibold text-slate-600">
+        <a href="#hero" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">홈</a>
+        <a href="#simulations" onclick="document.querySelector('[data-filter=grade1]').click()" class="px-4 py-2.5 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition">중1 시뮬레이션</a>
+        <a href="#simulations" onclick="document.querySelector('[data-filter=grade2]').click()" class="px-4 py-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition">중2 시뮬레이션</a>
+        <a href="#simulations" onclick="document.querySelector('[data-filter=grade3]').click()" class="px-4 py-2.5 rounded-xl hover:bg-purple-50 hover:text-purple-700 transition">중3 시뮬레이션</a>
+        <a href="#teachertips" class="px-4 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition">수업 활용팁</a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- =========================================================
+       2. HERO SECTION (중학교 수학교사 맞춤형 히어로)
+       ========================================================= -->
+  <main id="hero" class="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-14 pb-14 z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+      
+      <!-- Hero Left: Teacher-Focused Copy -->
+      <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
+        <!-- Floating Announcement Pill -->
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 clay-badge text-xs sm:text-sm font-bold text-indigo-800">
+          <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+          <span>🏫 전국 중학교 수학 수업 맞춤형 인터랙티브 교구</span>
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="text-3xl sm:text-5xl lg:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+          칠판 판서 대신<br />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-600 to-emerald-600">
+            손으로 직접 움직이는
+          </span><br />
+          중학교 수학 수업
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium">
+          선생님의 수업 시간 설명 고민을 덜어드립니다! 
+          <strong>일차함수 기울기</strong>, <strong>피타고라스 정리</strong>, <strong>삼각비</strong>, <strong>주사위 확률</strong>까지 
+          학생들의 눈높이에 맞춘 인터랙티브 시뮬레이터를 스마트TV 전자칠판과 태블릿에서 바로 조작해보세요.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+          <a href="#simulations" class="clay-btn clay-btn-primary px-7 py-3.5 text-base font-bold text-white shadow-lg">
+            <i data-lucide="compass" class="w-5 h-5 mr-2"></i>
+            중학 교구 모아보기
+          </a>
+          <a href="#diceSection" class="clay-btn clay-btn-secondary px-6 py-3.5 text-base font-semibold text-slate-700">
+            <i data-lucide="dices" class="w-5 h-5 mr-2 text-indigo-600"></i>
+            중2 확률 실험실
+          </a>
+        </div>
+
+        <!-- Grade Badges Row -->
+        <div class="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-xs font-bold">
+          <span class="px-3 py-1.5 rounded-full badge-grade-1 clay-badge">🌱 중1: 소인수분해 · 회전체</span>
+          <span class="px-3 py-1.5 rounded-full badge-grade-2 clay-badge">🌿 중2: 일차함수 · 피타고라스 · 확률</span>
+          <span class="px-3 py-1.5 rounded-full badge-grade-3 clay-badge">🌳 중3: 삼각비 · 이차함수 · 산점도</span>
+        </div>
+      </div>
+
+      <!-- Hero Right: Live Interactive Linear Function Canvas (중2 일차함수 실시간 조작기) -->
+      <div class="lg:col-span-6">
+        <div class="clay-card p-6 sm:p-7 relative overflow-hidden">
+          <!-- Card Header Bar -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-200/70">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-rose-400 shadow-inner"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-400 shadow-inner"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-400 shadow-inner"></span>
+              <span class="ml-2 text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i>
+                [중2 함수] 일차함수 기울기와 y절편 탐구기
+              </span>
+            </div>
+            <span id="functionFormula" class="text-sm font-mono font-black bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full clay-badge border border-indigo-200">
+              y = x
+            </span>
+          </div>
+
+          <!-- Coordinate Plane Canvas -->
+          <div class="my-4 w-full h-[220px] sm:h-[240px] rounded-2xl bg-white clay-inset flex items-center justify-center overflow-hidden p-1 relative">
+            <canvas id="heroCanvas" class="w-full h-full block"></canvas>
+            <div class="absolute bottom-2 right-2 text-[10px] text-slate-400 font-mono bg-white/80 px-2 py-0.5 rounded">
+              단위: 1칸 = 1
+            </div>
+          </div>
+
+          <!-- Controls: Slope (a) and Intercept (b) Sliders -->
+          <div class="space-y-3 pt-1">
+            <!-- a (기울기) -->
+            <div class="flex items-center gap-3 text-xs font-bold text-slate-700">
+              <span class="w-20">기울기 (a)</span>
+              <input type="range" id="slopeSlider" min="-3" max="3" step="0.25" value="1" class="clay-slider flex-1" />
+              <span id="slopeValueText" class="w-16 text-right font-mono text-indigo-600 font-bold">a = 1.0</span>
+            </div>
+
+            <!-- b (y절편) -->
+            <div class="flex items-center gap-3 text-xs font-bold text-slate-700">
+              <span class="w-20">y절편 (b)</span>
+              <input type="range" id="interceptSlider" min="-4" max="4" step="0.5" value="0" class="clay-slider flex-1" />
+              <span id="interceptValueText" class="w-16 text-right font-mono text-rose-600 font-bold">b = 0.0</span>
+            </div>
+
+            <!-- Bottom Teacher Demo Toolbar -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+              <button id="autoAnimateBtn" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold flex items-center gap-1 text-slate-700 hover:bg-indigo-50">
+                <i data-lucide="play" class="w-3.5 h-3.5 text-indigo-600"></i>
+                기울기 변화 자동 시연
+              </button>
+              <div class="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-600"></span>Δx 밑변</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-600"></span>Δy 높이</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- =========================================================
+       3. GRADE & DOMAIN FILTER SECTION (학년/영역 필터)
+       ========================================================= -->
+  <section id="simulations" class="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4">
+    <div class="text-center max-w-2xl mx-auto mb-8 space-y-3">
+      <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        중학교 1~3학년 교육과정 시뮬레이션
+      </h2>
+      <p class="text-sm sm:text-base text-slate-600">
+        카드를 클릭하면 <strong>실시간 조작 시뮬레이터 스튜디오</strong>가 열려 직접 슬라이더와 버튼으로 실험할 수 있습니다.
+      </p>
+    </div>
+
+    <!-- Grade & Domain Filter Buttons -->
+    <div class="flex items-center justify-center flex-wrap gap-2.5 sm:gap-3 py-2">
+      <button class="clay-filter-btn active" data-filter="all">
+        전체 보기 (8)
+      </button>
+      <button class="clay-filter-btn" data-filter="grade1">
+        🌱 중1 과정
+      </button>
+      <button class="clay-filter-btn" data-filter="grade2">
+        🌿 중2 과정
+      </button>
+      <button class="clay-filter-btn" data-filter="grade3">
+        🌳 중3 과정
+      </button>
+      <button class="clay-filter-btn" data-filter="geometry">
+        📐 기하 (도형)
+      </button>
+      <button class="clay-filter-btn" data-filter="function">
+        📈 함수 & 그래프
+      </button>
+      <button class="clay-filter-btn" data-filter="probability">
+        🎲 확률 & 통계
+      </button>
+    </div>
+  </section>
+
+
+  <!-- =========================================================
+       4. 8 CURATED MIDDLE SCHOOL SIMULATION CARDS
+       ========================================================= -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-8 py-6">
+    <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+      <!-- Card 1: [중2 기하] 피타고라스 정리 물 채우기 증명 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="geometry" data-tags="피타고라스 직각삼각형 빗변 기하 중2 물 증명">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-blue-200 group-hover:to-indigo-300 transition-colors">
+            <div class="relative w-28 h-28 flex items-center justify-center">
+              <div class="absolute w-10 h-10 bg-cyan-500/85 rounded-lg shadow-md -left-1 bottom-1 transform -rotate-12 flex items-center justify-center text-white font-mono text-[10px] font-bold">a²</div>
+              <div class="absolute w-12 h-12 bg-indigo-500/85 rounded-lg shadow-md right-1 bottom-1 transform rotate-6 flex items-center justify-center text-white font-mono text-[10px] font-bold">b²</div>
+              <div class="absolute w-16 h-16 bg-purple-500/85 rounded-xl shadow-lg -top-1 px-2 py-2 flex items-center justify-center text-white font-mono text-xs font-black border-2 border-white/80">c²</div>
+            </div>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-2">
+              중2-2 기하
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-indigo-600">a² + b² = c²</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">도형의 닮음과 피타고라스</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              피타고라스 정리: 물 채우기 증명
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              직각삼각형의 두 변에 세운 정사각형 액체가 회전하면서 빗변의 정사각형을 정확히 채우는 넓이 보존 시뮬레이션.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="pythagoras">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 2: [중2 함수] 일차함수 y = ax + b 기울기와 절편 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="function" data-tags="일차함수 기울기 절편 함수 중2 좌표평면 직선">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-indigo-100 to-sky-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-indigo-200 group-hover:to-sky-300 transition-colors">
+            <svg class="w-32 h-24 text-indigo-600" viewBox="0 0 100 80" fill="none">
+              <line x1="10" y1="70" x2="90" y2="10" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" />
+              <line x1="10" y1="40" x2="90" y2="40" stroke="#cbd5e1" stroke-width="1.5" />
+              <line x1="50" y1="10" x2="50" y2="70" stroke="#cbd5e1" stroke-width="1.5" />
+              <circle cx="50" cy="40" r="3" fill="#e11d48" />
+              <rect x="50" y="30" width="20" height="10" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2" fill="none" />
+            </svg>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-2">
+              중2-1 함수
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-indigo-600">y = ax + b</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">일차함수와 그래프</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              일차함수 기울기 & 절편 탐구기
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              기울기 a의 부호와 절댓값에 따른 경사도 변화와 y절편 b에 따른 평행이동을 실시간 좌표평면에서 조작합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="linear">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 3: [중3 기하] 삼각비(sin, cos, tan)와 직각삼각형 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="geometry" data-tags="삼각비 싸인 코사인 탄젠트 기하 중3 직각삼각형 특수각">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-purple-200 group-hover:to-pink-300 transition-colors">
+            <div class="text-center font-serif text-purple-700 font-black">
+              <div class="text-2xl tracking-widest">sin · cos · tan</div>
+              <div class="text-xs font-mono font-semibold text-purple-500 mt-1">30° · 45° · 60°</div>
+            </div>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-3">
+              중3-2 기하
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-purple-600">닮음비의 불변성</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">삼각비 단원</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              삼각비와 직각삼각형 닮음 측정기
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              삼각형의 크기가 달라져도 각도가 일정하면 세 변의 길이의 비는 변하지 않음을 시각적으로 확인합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="trig">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 4: [중3 함수] 이차함수 y = a(x - p)² + q 포물선 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="function" data-tags="이차함수 포물선 꼭짓점 축 대칭 함수 중3">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-amber-100 to-rose-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-amber-200 group-hover:to-rose-300 transition-colors">
+            <svg class="w-32 h-24 text-rose-600" viewBox="0 0 100 80" fill="none">
+              <path d="M10 20 Q 50 80, 90 20" stroke="#e11d48" stroke-width="3" stroke-linecap="round" fill="none" />
+              <circle cx="50" cy="50" r="3.5" fill="#4f46e5" />
+              <line x1="50" y1="10" x2="50" y2="70" stroke="#94a3b8" stroke-dasharray="2 2" />
+            </svg>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-3">
+              중3-1 함수
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-rose-600">(p, q) 꼭짓점</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">이차함수와 그래프</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              이차함수 포물선과 꼭짓점 이동
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              기본형 y = ax²의 폭과 모양, x축 p만큼, y축 q만큼 평행이동한 표준형의 꼭짓점 이동을 농구 슛 궤적으로 탐구합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="quadratic">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 5: [중1 기하] 입체도형 회전체와 전개도 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade1" data-domain="geometry" data-tags="입체도형 회전체 원기둥 원뿔 구 전개도 중1 기하 겉넓이 부피">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-emerald-200 group-hover:to-teal-300 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-14 border-2 border-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold text-emerald-800">원기둥</div>
+              <div class="w-10 h-14 border-2 border-teal-600 rounded-t-full flex items-center justify-center text-[10px] font-bold text-teal-800">원뿔</div>
+              <div class="w-11 h-11 border-2 border-cyan-600 rounded-full flex items-center justify-center text-[10px] font-bold text-cyan-800">구</div>
+            </div>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-1">
+              중1-2 기하
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-emerald-600">부피비 1 : 2 : 3</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">입체도형의 성질</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              입체도형 회전체와 전개도 실험
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              평면도형을 회전축 중심으로 1회전 시켰을 때 생기는 회전체와 단면을 자르고, 360° 회전시키는 공간 지각 시뮬레이션.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 조작
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="solid">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 6: [중2 기하] 삼각형의 외심과 내심 작도기 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade2" data-domain="geometry" data-tags="외심 내심 삼각형 외접원 내접원 기하 중2 수직이등분선">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-cyan-100 to-blue-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-cyan-200 group-hover:to-blue-300 transition-colors">
+            <div class="relative w-24 h-24 flex items-center justify-center">
+              <div class="w-20 h-20 rounded-full border-2 border-dashed border-cyan-500 flex items-center justify-center">
+                <polygon points="40,5 75,70 5,70" style="fill:none;stroke:#3b82f6;stroke-width:2" />
+                <span class="w-2 h-2 rounded-full bg-red-500 absolute"></span>
+              </div>
+            </div>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-2">
+              중2-2 기하
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-blue-600">외심 & 내심</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">삼각형의 성질</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              삼각형의 외심과 내심 실시간 작도기
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              삼각형 꼭짓점을 직접 드래그하여 예각·직각·둔각으로 변형할 때, 외심과 내심 위치의 변화를 실시간으로 비교합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 꼭짓점 드래그
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="incenter">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 7: [중1 수와 연산] 에라토스테네스의 체 & 소인수분해 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade1" data-domain="number" data-tags="소수 소인수분해 에라토스테네스의체 거듭제곱 수와연산 중1">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-emerald-100 to-lime-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-emerald-200 group-hover:to-lime-300 transition-colors">
+            <div class="grid grid-cols-5 gap-1 text-[11px] font-bold text-center">
+              <span class="w-5 h-5 rounded bg-emerald-600 text-white flex items-center justify-center">2</span>
+              <span class="w-5 h-5 rounded bg-emerald-600 text-white flex items-center justify-center">3</span>
+              <span class="w-5 h-5 rounded bg-slate-200 text-slate-400 line-through flex items-center justify-center">4</span>
+              <span class="w-5 h-5 rounded bg-emerald-600 text-white flex items-center justify-center">5</span>
+              <span class="w-5 h-5 rounded bg-slate-200 text-slate-400 line-through flex items-center justify-center">6</span>
+            </div>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-1">
+              중1-1 수와 연산
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-emerald-600">소수와 합성수</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">소인수분해</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              에라토스테네스의 체 & 소인수분해
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              버튼을 눌러 배수를 하나씩 지워가며 100 이하의 소수를 찾아내는 애니메이션 교구.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 지우기
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="prime">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Card 8: [중3 통계] 산점도와 상관관계 & 대푯값 시소 저울 -->
+      <article class="clay-card sim-card flex flex-col justify-between p-5 group cursor-pointer" data-grade="grade3" data-domain="probability" data-tags="산점도 상관관계 대푯값 평균 중앙값 최빈값 통계 중3 산포도">
+        <div>
+          <div class="w-full h-36 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-200 clay-inset flex items-center justify-center p-3 relative overflow-hidden group-hover:from-violet-200 group-hover:to-purple-300 transition-colors">
+            <div class="relative w-28 h-20 flex items-center justify-center">
+              <div class="absolute w-2 h-2 rounded-full bg-purple-600 left-3 bottom-3"></div>
+              <div class="absolute w-2 h-2 rounded-full bg-purple-600 left-8 bottom-6"></div>
+              <div class="absolute w-2 h-2 rounded-full bg-purple-600 left-12 bottom-9"></div>
+              <div class="absolute w-2 h-2 rounded-full bg-purple-600 left-16 bottom-12"></div>
+              <div class="absolute w-2 h-2 rounded-full bg-purple-600 right-4 top-2"></div>
+              <line class="w-24 h-0.5 bg-purple-400 transform -rotate-25"></line>
+            </div>
+            <span class="absolute top-2.5 left-2.5 text-[10px] font-black px-2 py-0.5 rounded-full badge-grade-3">
+              중3-2 통계
+            </span>
+          </div>
+
+          <div class="mt-4 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-purple-600">상관관계 분석</span>
+              <span class="sim-curriculum text-slate-400 font-semibold">대푯값과 산포도</span>
+            </div>
+            <h3 class="sim-title text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+              산점도와 상관관계 & 대푯값 저울
+            </h3>
+            <p class="sim-desc text-xs text-slate-600 leading-relaxed line-clamp-2">
+              직접 화면을 클릭해 점을 추가하고, 극단적인 이상치(Outlier)가 들어왔을 때 평균과 중앙값의 변화를 비교합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+          <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> 클릭하여 점추가
+          </span>
+          <button class="btn-run-sim clay-btn clay-btn-primary text-xs px-3.5 py-1.5 font-bold" data-sim-id="scatter">
+            교구 실행
+            <i data-lucide="play" class="w-3 h-3 ml-1"></i>
+          </button>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- No Search Result State -->
+    <div id="noSearchResult" class="hidden text-center py-16 clay-card max-w-md mx-auto mt-8">
+      <i data-lucide="search-x" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
+      <h3 class="text-base font-bold text-slate-700">검색된 중학 수학 교구가 없습니다</h3>
+      <p class="text-xs text-slate-500 mt-1">다른 단원명이나 키워드(피타고라스, 일차함수 등)로 검색해보세요.</p>
+    </div>
+  </section>
+
+
+  <!-- =========================================================
+       5. LIVE INTERACTIVE MIDDLE SCHOOL SANDBOX: 중2 확률 실험실
+       ========================================================= -->
+  <section id="diceSection" class="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+    <div class="clay-card p-6 sm:p-10 relative overflow-hidden bg-gradient-to-br from-white via-indigo-50/40 to-blue-50/60">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- Left: Dice Rolling Controls & Stats -->
+        <div class="lg:col-span-6 space-y-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold clay-badge">
+            <i data-lucide="dices" class="w-3.5 h-3.5"></i>
+            <span>[중2 확률 단원] 경우의 수 & 대수의 법칙 실시간 실험실</span>
+          </div>
+          
+          <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            두 개의 주사위 눈의 합과 확률
+          </h2>
+          
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
+            주사위 2개를 던졌을 때 <strong>왜 합이 7이 나올 확률(6/36 ≈ 16.7%)이 가장 높을까요?</strong><br />
+            던지기 횟수가 수백 번으로 늘어날수록 이론적 삼각분포로 수렴하는 대수의 법칙(Law of Large Numbers)을 
+            교실에서 학생들과 직접 눈으로 확인해보세요!
+          </p>
+
+          <!-- Live 3D Dice Display Box -->
+          <div class="flex items-center gap-4 py-2">
+            <div id="dice1Face" class="clay-dice">⚂</div>
+            <span class="text-2xl font-black text-slate-400">+</span>
+            <div id="dice2Face" class="clay-dice">⚃</div>
+            <div class="ml-2">
+              <span id="lastDiceSum" class="text-lg sm:text-xl font-black text-indigo-700 block">합: 7</span>
+              <span class="text-xs text-slate-500 font-semibold">총 던진 횟수: <strong id="totalDiceThrows" class="text-slate-800">30</strong>회</span>
+            </div>
+          </div>
+
+          <!-- Rolling Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2.5 pt-2">
+            <button id="roll1Btn" class="clay-btn clay-btn-primary px-4 py-2.5 text-xs sm:text-sm font-bold">
+              <i data-lucide="play" class="w-4 h-4 mr-1"></i> 1회 던지기
+            </button>
+            <button id="roll10Btn" class="clay-btn clay-btn-secondary px-4 py-2.5 text-xs sm:text-sm font-bold text-indigo-700">
+              <i data-lucide="repeat" class="w-4 h-4 mr-1"></i> 10회 연속
+            </button>
+            <button id="roll100Btn" class="clay-btn clay-btn-coral px-4 py-2.5 text-xs sm:text-sm font-bold text-white">
+              <i data-lucide="zap" class="w-4 h-4 mr-1"></i> 100회 폭풍 던지기
+            </button>
+            <button id="resetDiceBtn" class="clay-btn clay-btn-secondary px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-600">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Bar Chart of Sums (2 to 12) -->
+        <div class="lg:col-span-6">
+          <div class="clay-card p-5 bg-white/90">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-700">주사위 눈의 합(2~12) 빈도수 분포</span>
+              <span class="text-[11px] font-bold text-rose-600">이론상 합 7 최다 (6/36)</span>
+            </div>
+
+            <!-- Bar Chart Container -->
+            <div class="h-48 flex items-end justify-between gap-1.5 sm:gap-2 pt-6 pb-2 px-1">
+              <!-- Bars 2 to 12 -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum2" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum2" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">2</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum3" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum3" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">3</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum4" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum4" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">4</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum5" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum5" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">5</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum6" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum6" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">6</span>
+              </div>
+              <!-- Highlighted Bar 7 -->
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum7" class="text-[9px] text-rose-600 font-black mb-1">0%</span>
+                <div id="barSum7" class="w-full bg-rose-500 rounded-t-lg transition-all duration-200 shadow-md" style="height: 4%;"></div>
+                <span class="text-[11px] font-black text-rose-600 mt-1">7</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum8" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum8" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">8</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum9" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum9" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">9</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum10" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum10" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">10</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum11" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum11" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">11</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                <span id="pctSum12" class="text-[9px] text-slate-400 font-bold mb-1">0%</span>
+                <div id="barSum12" class="w-full bg-indigo-400 rounded-t-lg transition-all duration-200" style="height: 4%;"></div>
+                <span class="text-[10px] font-bold text-slate-600 mt-1">12</span>
+              </div>
+            </div>
+
+            <div class="text-center text-[11px] text-slate-500 pt-2 border-t border-slate-100 font-medium">
+              가로축: 두 눈의 합 (2~12) | 세로축: 나온 횟수 비율 (%)
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =========================================================
+       6. TEACHER'S CLASSROOM TIPS (선생님을 위한 수업 활용 팁)
+       ========================================================= -->
+  <section id="teachertips" class="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+    <div class="clay-card p-7 sm:p-10 relative overflow-hidden bg-gradient-to-r from-emerald-50/70 via-teal-50/50 to-indigo-50/60">
+      <div class="max-w-3xl mx-auto space-y-5 text-center sm:text-left">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+          <span class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg">
+            <i data-lucide="lightbulb" class="w-6 h-6"></i>
+          </span>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900">
+              선생님, 교실 수업에서 이렇게 활용해보세요!
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-0.5">
+              별도 설치 없이 교실 스마트TV, 전자칠판, 1인 1패드 환경에서 바로 실행 가능합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div class="clay-inset p-4 rounded-2xl bg-white/70">
+            <div class="font-bold text-xs text-indigo-700 mb-1 flex items-center gap-1.5">
+              <i data-lucide="monitor" class="w-4 h-4"></i> 전자칠판 판서 시연
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              개념 도입 시 교사가 큰 화면에서 슬라이더를 당겨보이며 공식이 유도되는 시각적 원리를 확인시킵니다.
+            </p>
+          </div>
+          <div class="clay-inset p-4 rounded-2xl bg-white/70">
+            <div class="font-bold text-xs text-emerald-700 mb-1 flex items-center gap-1.5">
+              <i data-lucide="tablet" class="w-4 h-4"></i> 1인 1태블릿 모둠 탐구
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              학생들이 개별 패드로 직접 수치를 바꿔보며 학습지의 질문(예: a가 음수면 어떻게 될까?)을 해결합니다.
+            </p>
+          </div>
+          <div class="clay-inset p-4 rounded-2xl bg-white/70">
+            <div class="font-bold text-xs text-purple-700 mb-1 flex items-center gap-1.5">
+              <i data-lucide="help-circle" class="w-4 h-4"></i> 형성평가 & 발문 유도
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              "주사위를 100번 던졌을 때 왜 7이 가장 많이 나왔을까?" 등 생각하는 힘을 기르는 발문으로 수업을 연결합니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =========================================================
+       7. FOOTER (클레이 푸터)
+       ========================================================= -->
+  <footer class="max-w-7xl mx-auto px-4 sm:px-8 pt-6 pb-16 text-center text-xs text-slate-500">
+    <div class="clay-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+          M
+        </div>
+        <span class="font-bold text-slate-800">MathClay 중학수학</span>
+        <span class="text-slate-400">| 중학교 수학교사를 위한 인터랙티브 교구 플랫폼</span>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 clay-badge text-[11px] font-bold text-slate-600">
+          <i data-lucide="triangle" class="w-3 h-3 text-black fill-black"></i>
+          Deployed on Vercel
+        </span>
+        <span>© 2026 MathClay Junior. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- =========================================================
+       8. MODAL: 실시간 인터랙티브 시뮬레이션 스튜디오 (Playable Studio)
+       ========================================================= -->
+  <div id="simModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="clay-card w-full max-w-4xl max-h-[94vh] overflow-y-auto p-5 sm:p-7 bg-white relative my-auto">
+      
+      <!-- Modal Top Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <span id="modalGrade" class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-black clay-badge">
+            중학교 교육과정
+          </span>
+          <h3 id="modalTitle" class="text-lg sm:text-2xl font-black text-slate-900">
+            시뮬레이션 교구 제목
+          </h3>
+        </div>
+
+        <button id="modalCloseBtn" class="clay-btn clay-btn-secondary p-2 text-slate-500 hover:text-slate-800 focus:outline-none" aria-label="닫기">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Main Interactive Canvas Viewport -->
+      <div class="my-4 w-full h-[280px] sm:h-[340px] rounded-2xl bg-white clay-inset relative overflow-hidden flex items-center justify-center p-1">
+        <canvas id="modalStudioCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+      </div>
+
+      <!-- Real-time Mathematical Readout / Stats Box -->
+      <div id="modalStudioInfo" class="mb-3 p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs font-mono">
+        실시간 계산 수치가 표시됩니다.
+      </div>
+
+      <!-- Dynamic Interactive Controls Container (Populated by simulations.js) -->
+      <div id="modalStudioControls" class="p-4 rounded-2xl bg-slate-50 clay-inset">
+        <!-- Sliders, buttons, and switches injected dynamically -->
+      </div>
+
+      <!-- Description & Classroom Teaching Guide -->
+      <div class="mt-4 pt-3 border-t border-slate-100 space-y-3">
+        <p id="modalDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          교구에 대한 설명이 표시됩니다.
+        </p>
+
+        <!-- Teaching Point Callout Box -->
+        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs text-amber-900 space-y-1">
+          <span class="font-bold flex items-center gap-1.5 text-amber-800">
+            <i data-lucide="sparkles" class="w-4 h-4"></i> 선생님을 위한 수업 지도 Tip:
+          </span>
+          <p id="modalTeachingPoint" class="leading-relaxed font-medium">
+            학생들에게 발문해볼 수 있는 핵심 포인트가 안내됩니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bottom Close Action -->
+      <div class="mt-5 pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+        <button onclick="document.getElementById('simModal').classList.add('hidden'); document.getElementById('simModal').classList.remove('flex'); SimulationEngine.stop();" class="clay-btn clay-btn-primary px-6 py-2.5 text-xs sm:text-sm font-bold text-white">
+          탐구 완료 / 닫기
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lucide Icons Rendering Initialization -->
+  <script>
+    lucide.createIcons();
+  </script>
+  <!-- Simulations Interactive Engine -->
+  <script src="js/simulations.js"></script>
+  <!-- Custom Application Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
