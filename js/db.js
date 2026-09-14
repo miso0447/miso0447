@@ -8,17 +8,20 @@ const MathClayDB = {
   supabaseClient: null,
   configKey: "mathclay_supabase_config",
 
-  // Supabase 기본 프로젝트 정보 (사용자 프로젝트 키 연동 가능)
+  // Supabase 기본 프로젝트 정보 (선생님의 Supabase 클라우드 프로젝트 연동 완료)
   defaultConfig: {
-    url: "",
-    anonKey: ""
+    url: "https://jlviguxkiswpnzteqfcu.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsdmlndXhraXN3cG56dGVxZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNjkwODYsImV4cCI6MjEwNDk0NTA4Nn0.wEr4aJv2U3XETa2tPUhancwM-VG_p7Trz1vZUoaBs-4"
   },
 
   getConfig() {
     try {
       const saved = localStorage.getItem(this.configKey);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed.url && parsed.anonKey) {
+          return parsed;
+        }
       }
     } catch (e) {}
     return this.defaultConfig;
