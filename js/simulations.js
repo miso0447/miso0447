@@ -1,12 +1,11 @@
 /**
- * MathClay Junior - 8가지 중학교 수학 시뮬레이션 인터랙티브 엔진
+ * MathClay Junior - 중학교 8대 수학 시뮬레이션 고품질 인터랙티브 엔진
  */
 
 const SimulationEngine = {
   currentSim: null,
   animId: null,
 
-  // 공통 캔버스 리사이즈 헬퍼
   setupCanvas(canvas) {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
@@ -23,10 +22,14 @@ const SimulationEngine = {
       this.animId = null;
     }
     this.currentSim = null;
+    if (this.cleanupHandlers) {
+      this.cleanupHandlers();
+      this.cleanupHandlers = null;
+    }
   },
 
   /* =========================================================================
-   * 1. [중2 기하] 피타고라스 정리 (물 채우기 & 넓이 보존 증명)
+   * 1. [중2 기하] 피타고라스 정리: 물 채우기 & 직각삼각형 넓이 보존
    * ========================================================================= */
   mountPythagoras(canvas, controlsEl, infoEl) {
     this.stop();
@@ -36,31 +39,50 @@ const SimulationEngine = {
     let b = 4;
     let liquidProgress = 0; // 0 ~ 1
     let isPouring = false;
+    let particles = [];
 
-    // 컨트롤 UI 생성
     controlsEl.innerHTML = `
       <div class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex items-center gap-3 text-xs font-bold text-slate-700">
-            <span class="w-16">밑변 a = <strong id="valA" class="text-indigo-600 font-mono">3</strong></span>
+            <span class="w-18">밑변 a = <strong id="valA" class="text-indigo-600 font-mono">3</strong></span>
             <input type="range" id="sliderA" min="2" max="5" value="3" step="1" class="clay-slider flex-1">
           </div>
           <div class="flex items-center gap-3 text-xs font-bold text-slate-700">
-            <span class="w-16">높이 b = <strong id="valB" class="text-emerald-600 font-mono">4</strong></span>
+            <span class="w-18">높이 b = <strong id="valB" class="text-emerald-600 font-mono">4</strong></span>
             <input type="range" id="sliderB" min="2" max="5" value="4" step="1" class="clay-slider flex-1">
           </div>
         </div>
         <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
-          <button id="btnPour" class="clay-btn clay-btn-primary px-4 py-2 text-xs font-bold text-white flex items-center gap-1.5">
-            <i data-lucide="droplets" class="w-3.5 h-3.5"></i> 물 채우기 회전 증명
+          <button id="btnPour" class="clay-btn clay-btn-primary px-4 py-2 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+            <i data-lucide="droplets" class="w-4 h-4 text-cyan-200"></i> 물 채우기 액체 시뮬레이션
           </button>
-          <button id="btnResetPyth" class="clay-btn clay-btn-secondary px-3 py-2 text-xs font-bold text-slate-600 flex items-center gap-1">
+          <button id="btnResetPyth" class="clay-btn clay-btn-secondary px-3.5 py-2 text-xs font-bold text-slate-600 flex items-center gap-1">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 초기화
           </button>
         </div>
       </div>
     `;
     if (window.lucide) lucide.createIcons();
+
+    // 액체 파티클 초기화
+    function spawnParticles(originA, originB, targetC) {
+      particles = [];
+      for (let i = 0; i < 45; i++) {
+        const isFromA = i % 2 === 0;
+        const start = isFromA ? originA : originB;
+        particles.push({
+          x: start.x + (Math.random() - 0.5) * 30,
+          y: start.y + (Math.random() - 0.5) * 30,
+          targetX: targetC.x + (Math.random() - 0.5) * 40,
+          targetY: targetC.y + (Math.random() - 0.5) * 40,
+          color: isFromA ? "#60a5fa" : "#34d399",
+          speed: 0.02 + Math.random() * 0.03,
+          progress: Math.random() * 0.3,
+          size: 3 + Math.random() * 3
+        });
+      }
+    }
 
     const draw = () => {
       if (SimulationEngine.currentSim !== "pythagoras") return;
@@ -71,56 +93,65 @@ const SimulationEngine = {
       const c = Math.sqrt(a * a + b * b);
       const scale = Math.min(width, height) / 14;
 
-      const originX = width * 0.38;
-      const originY = height * 0.65;
+      // 직각 꼭짓점 배치
+      const originX = width * 0.42;
+      const originY = height * 0.68;
 
       const pxA = a * scale;
       const pxB = b * scale;
+      const pxC = c * scale;
 
-      // 직각삼각형 꼭짓점
-      const p0 = { x: originX, y: originY }; // 직각 꼭짓점
-      const p1 = { x: originX + pxA, y: originY }; // 밑변 끝점
-      const p2 = { x: originX, y: originY - pxB }; // 높이 끝점
+      const p0 = { x: originX, y: originY }; // 직각 C
+      const p1 = { x: originX + pxA, y: originY }; // A (밑변 끝)
+      const p2 = { x: originX, y: originY - pxB }; // B (높이 끝)
 
-      // 1. 밑변 정사각형 a^2
-      const aFillRatio = Math.max(0, 1 - liquidProgress);
-      ctx.fillStyle = `rgba(99, 102, 241, ${0.15 + 0.6 * aFillRatio})`;
+      // 1. 밑변 정사각형 a^2 (아래쪽 바깥으로 전개)
+      const aFill = Math.max(0, 1 - liquidProgress);
+      ctx.fillStyle = `rgba(99, 102, 241, ${0.2 + 0.65 * aFill})`;
       ctx.strokeStyle = "#4f46e5";
-      ctx.lineWidth = 2;
-      ctx.fillRect(p0.x, p0.y, pxA, pxA * aFillRatio);
+      ctx.lineWidth = 2.5;
+      ctx.fillRect(p0.x, p0.y + pxA * (1 - aFill), pxA, pxA * aFill);
       ctx.strokeRect(p0.x, p0.y, pxA, pxA);
 
-      ctx.fillStyle = "#4338ca";
+      ctx.fillStyle = "#3730a3";
       ctx.font = "bold 13px Pretendard";
       ctx.fillText(`a² = ${a * a}`, p0.x + pxA / 2 - 18, p0.y + pxA / 2 + 5);
 
-      // 2. 높이 정사각형 b^2
-      const bFillRatio = Math.max(0, 1 - liquidProgress);
-      ctx.fillStyle = `rgba(16, 185, 129, ${0.15 + 0.6 * bFillRatio})`;
+      // 2. 높이 정사각형 b^2 (왼쪽 바깥으로 전개)
+      const bFill = Math.max(0, 1 - liquidProgress);
+      ctx.fillStyle = `rgba(16, 185, 129, ${0.2 + 0.65 * bFill})`;
       ctx.strokeStyle = "#059669";
-      ctx.fillRect(p0.x - pxB * bFillRatio, p2.y, pxB * bFillRatio, pxB);
+      ctx.lineWidth = 2.5;
+      ctx.fillRect(p0.x - pxB, p2.y + pxB * (1 - bFill), pxB, pxB * bFill);
       ctx.strokeRect(p0.x - pxB, p2.y, pxB, pxB);
 
       ctx.fillStyle = "#065f46";
       ctx.fillText(`b² = ${b * b}`, p0.x - pxB / 2 - 18, p2.y + pxB / 2 + 5);
 
-      // 3. 빗변 정사각형 c^2 (회전된 사각형)
-      const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x); // p1 -> p2 방향
-      const pxC = c * scale;
+      // 3. 빗변 정사각형 c^2 (삼각형 밖인 우상단 방향으로 정확히 전개)
+      // 벡터 p1 -> p2: (p2.x - p1.x, p2.y - p1.y) = (-pxA, -pxB)
+      // 빗변 바깥 수직 벡터: (pxB, -pxA)
+      const hypAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 
       ctx.save();
       ctx.translate(p1.x, p1.y);
-      ctx.rotate(angle);
+      ctx.rotate(hypAngle);
 
-      // 빗변 정사각형 채움 (물 채우기 비율)
+      // 빗변 바깥쪽(음의 local y축 방향)으로 정사각형 렌더링
       const cFill = liquidProgress;
-      ctx.fillStyle = `rgba(244, 63, 94, ${0.15 + 0.65 * cFill})`;
+      ctx.fillStyle = `rgba(244, 63, 94, ${0.15 + 0.7 * cFill})`;
       ctx.strokeStyle = "#e11d48";
-      ctx.fillRect(0, -pxC * cFill, pxC, pxC * cFill);
+      ctx.lineWidth = 2.5;
+
+      // 물 채우기 바닥부터 상승 애니메이션
+      if (cFill > 0) {
+        ctx.fillRect(0, -pxC, pxC, pxC * cFill);
+      }
       ctx.strokeRect(0, -pxC, pxC, pxC);
 
       ctx.fillStyle = "#9f1239";
-      ctx.fillText(`c² = ${(c * c).toFixed(0)}`, pxC / 2 - 18, -pxC / 2);
+      ctx.font = "bold 14px Pretendard";
+      ctx.fillText(`c² = ${(c * c).toFixed(0)}`, pxC / 2 - 18, -pxC / 2 + 5);
       ctx.restore();
 
       // 4. 중심 직각삼각형 본체
@@ -132,38 +163,55 @@ const SimulationEngine = {
       ctx.fillStyle = "#ffffff";
       ctx.fill();
       ctx.strokeStyle = "#1e293b";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.stroke();
 
-      // 직각 표시 기호
-      const markSize = 12;
+      // 직각 기호
+      const mark = 14;
       ctx.beginPath();
-      ctx.moveTo(p0.x + markSize, p0.y);
-      ctx.lineTo(p0.x + markSize, p0.y - markSize);
-      ctx.lineTo(p0.x, p0.y - markSize);
+      ctx.moveTo(p0.x + mark, p0.y);
+      ctx.lineTo(p0.x + mark, p0.y - mark);
+      ctx.lineTo(p0.x, p0.y - mark);
       ctx.strokeStyle = "#e11d48";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 변 길이 라벨
+      // 변 길이 안내 텍스트
       ctx.fillStyle = "#1e293b";
-      ctx.font = "bold 12px Pretendard";
-      ctx.fillText(`a = ${a}`, (p0.x + p1.x) / 2 - 10, p0.y - 6);
-      ctx.fillText(`b = ${b}`, p0.x + 6, (p0.y + p2.y) / 2 + 4);
-      ctx.fillText(`c = ${c.toFixed(1)}`, (p1.x + p2.x) / 2 + 10, (p1.y + p2.y) / 2 - 4);
+      ctx.font = "bold 13px Pretendard";
+      ctx.fillText(`a = ${a}`, (p0.x + p1.x) / 2 - 10, p0.y - 8);
+      ctx.fillText(`b = ${b}`, p0.x + 8, (p0.y + p2.y) / 2 + 4);
+      ctx.fillText(`c = ${c.toFixed(1)}`, (p1.x + p2.x) / 2 + 12, (p1.y + p2.y) / 2);
 
-      // 정보 박스 업데이트
+      // 물 쏟아지는 파티클 애니메이션
+      if (isPouring && particles.length > 0) {
+        particles.forEach((pt) => {
+          pt.progress += pt.speed;
+          if (pt.progress > 1) pt.progress = 0;
+
+          // 베지에 곡선으로 액체 줄기 형성
+          const curX = pt.x + (pt.targetX - pt.x) * pt.progress;
+          const curY = pt.y + (pt.targetY - pt.y) * pt.progress - Math.sin(pt.progress * Math.PI) * 40;
+
+          ctx.beginPath();
+          ctx.arc(curX, curY, pt.size, 0, Math.PI * 2);
+          ctx.fillStyle = pt.color;
+          ctx.fill();
+        });
+      }
+
+      // 정보 박스
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between">
-            <span>a² (${a * a}) + b² (${b * b}) = <span class="text-rose-600 font-black">${a * a + b * b}</span></span>
-            <span>c² = <span class="text-rose-600 font-black">${(c * c).toFixed(0)}</span> (c ≈ ${c.toFixed(2)})</span>
+            <span>두 변의 정사각형 합: <strong class="text-indigo-600">${a * a}</strong> + <strong class="text-emerald-600">${b * b}</strong> = <strong class="text-rose-600 font-black">${a * a + b * b}</strong></span>
+            <span>빗변 정사각형 c²: <strong class="text-rose-600 font-black">${(c * c).toFixed(0)}</strong> (c ≈ ${c.toFixed(2)})</span>
           </div>
         `;
       }
 
       if (isPouring) {
-        liquidProgress += 0.02;
+        liquidProgress += 0.012;
         if (liquidProgress >= 1) {
           liquidProgress = 1;
           isPouring = false;
@@ -175,7 +223,6 @@ const SimulationEngine = {
 
     draw();
 
-    // 슬라이더 및 버튼 이벤트 바인딩
     document.getElementById("sliderA").addEventListener("input", (e) => {
       a = parseInt(e.target.value);
       document.getElementById("valA").textContent = a;
@@ -191,16 +238,25 @@ const SimulationEngine = {
     document.getElementById("btnPour").addEventListener("click", () => {
       liquidProgress = 0;
       isPouring = true;
+      const originX = canvas.getBoundingClientRect().width * 0.42;
+      const originY = canvas.getBoundingClientRect().height * 0.68;
+      const scale = Math.min(canvas.getBoundingClientRect().width, canvas.getBoundingClientRect().height) / 14;
+      spawnParticles(
+        { x: originX + (a * scale) / 2, y: originY + (a * scale) / 2 },
+        { x: originX - (b * scale) / 2, y: originY - (b * scale) / 2 },
+        { x: originX + (a * scale) / 2, y: originY - (b * scale) / 2 - 30 }
+      );
     });
 
     document.getElementById("btnResetPyth").addEventListener("click", () => {
       liquidProgress = 0;
       isPouring = false;
+      particles = [];
     });
   },
 
   /* =========================================================================
-   * 2. [중2 함수] 일차함수 y = ax + b 탐구기 (직선 위 점 대입)
+   * 2. [중2 함수] 일차함수 y = ax + b 탐구기 (좌표 눈금 & 절편/기울기)
    * ========================================================================= */
   mountLinear(canvas, controlsEl, infoEl) {
     this.stop();
@@ -226,6 +282,13 @@ const SimulationEngine = {
             <input type="range" id="linXSlider" min="-4" max="4" step="1" value="2.0" class="clay-slider flex-1">
           </div>
         </div>
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-100 flex-wrap">
+          <span class="text-xs text-slate-500 font-semibold">대표 함수 프리셋:</span>
+          <button class="btn-lin-pre clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-indigo-700" data-a="1" data-b="0">y = x</button>
+          <button class="btn-lin-pre clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-indigo-700" data-a="2" data-b="-1">y = 2x - 1</button>
+          <button class="btn-lin-pre clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-indigo-700" data-a="-1" data-b="2">y = -x + 2</button>
+          <button class="btn-lin-pre clay-btn clay-btn-secondary px-2.5 py-1 text-xs font-bold text-indigo-700" data-a="-0.5" data-b="0">y = -0.5x</button>
+        </div>
       </div>
     `;
 
@@ -239,23 +302,30 @@ const SimulationEngine = {
       const centerY = height / 2;
       const unit = Math.min(width, height) / 12;
 
-      // 모눈
+      // 모눈종이와 축 눈금 숫자
       ctx.strokeStyle = "#e2e8f0";
       ctx.lineWidth = 1;
-      for (let x = -6; x <= 6; x++) {
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "9px monospace";
+
+      for (let x = -5; x <= 5; x++) {
+        const px = centerX + x * unit;
         ctx.beginPath();
-        ctx.moveTo(centerX + x * unit, 0);
-        ctx.lineTo(centerX + x * unit, height);
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, height);
         ctx.stroke();
+        if (x !== 0) ctx.fillText(x, px - 3, centerY + 12);
       }
-      for (let y = -6; y <= 6; y++) {
+      for (let y = -5; y <= 5; y++) {
+        const py = centerY - y * unit;
         ctx.beginPath();
-        ctx.moveTo(0, centerY - y * unit);
-        ctx.lineTo(width, centerY - y * unit);
+        ctx.moveTo(0, py);
+        ctx.lineTo(width, py);
         ctx.stroke();
+        if (y !== 0) ctx.fillText(y, centerX - 14, py + 3);
       }
 
-      // 축
+      // 메인 축
       ctx.strokeStyle = "#64748b";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -275,21 +345,34 @@ const SimulationEngine = {
       ctx.lineTo(centerX + x2 * unit, centerY - y2 * unit);
       ctx.stroke();
 
+      // 기울기 계단 (Slope stairs: x=0 에서 x=1)
+      if (Math.abs(a) >= 0.1) {
+        const sX = centerX;
+        const sY = centerY - b * unit;
+        const cX = centerX + 1 * unit;
+        const cY = sY;
+        const eY = centerY - (a + b) * unit;
+
+        ctx.beginPath();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = "#059669";
+        ctx.lineWidth = 2;
+        ctx.moveTo(sX, sY);
+        ctx.lineTo(cX, cY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = a > 0 ? "#e11d48" : "#2563eb";
+        ctx.moveTo(cX, cY);
+        ctx.lineTo(cX, eY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
       // 탐구 점 (testX, testY)
       const testY = a * testX + b;
       const ptPxX = centerX + testX * unit;
       const ptPxY = centerY - testY * unit;
-
-      // 점 가이드선
-      ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = "#10b981";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(ptPxX, centerY);
-      ctx.lineTo(ptPxX, ptPxY);
-      ctx.lineTo(centerX, ptPxY);
-      ctx.stroke();
-      ctx.setLineDash([]);
 
       ctx.beginPath();
       ctx.arc(ptPxX, ptPxY, 7, 0, Math.PI * 2);
@@ -310,12 +393,15 @@ const SimulationEngine = {
       ctx.fillStyle = "#e11d48";
       ctx.fill();
 
-      // 정보
+      // 정보 박스
       if (infoEl) {
+        const xInt = a !== 0 ? (-b / a).toFixed(1) : "없음";
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
-            직선의 방정식: <span class="text-indigo-600 font-black">y = ${a}x ${b >= 0 ? "+ " + b : "- " + Math.abs(b)}</span> 
-            | 점 대입: x=${testX} 일 때 y = ${a}×(${testX}) ${b >= 0 ? "+" : ""}${b} = <span class="text-emerald-600 font-black">${testY.toFixed(1)}</span>
+            직선식: <span class="text-indigo-600 font-black">y = ${a}x ${b >= 0 ? "+ " + b : "- " + Math.abs(b)}</span>
+            | y절편: <span class="text-rose-600 font-bold">(0, ${b})</span>
+            | x절편: <span class="text-blue-600 font-bold">(${xInt}, 0)</span>
+            | 대입: x=${testX} → y=<span class="text-emerald-600 font-black">${testY.toFixed(1)}</span>
           </div>
         `;
       }
@@ -338,17 +424,29 @@ const SimulationEngine = {
       document.getElementById("linXVal").textContent = testX.toFixed(1);
       draw();
     });
+
+    document.querySelectorAll(".btn-lin-pre").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        a = parseFloat(btn.getAttribute("data-a"));
+        b = parseFloat(btn.getAttribute("data-b"));
+        document.getElementById("linASlider").value = a;
+        document.getElementById("linBSlider").value = b;
+        document.getElementById("linAVal").textContent = a.toFixed(1);
+        document.getElementById("linBVal").textContent = b.toFixed(1);
+        draw();
+      });
+    });
   },
 
   /* =========================================================================
-   * 3. [중3 기하] 삼각비와 닮음 (각도 & 삼각형 크기 조작)
+   * 3. [중3 기하] 삼각비와 닮음 (특수각 & 불변성 증명)
    * ========================================================================= */
   mountTrig(canvas, controlsEl, infoEl) {
     this.stop();
     this.currentSim = "trig";
 
     let deg = 30;
-    let sizeScale = 1.0; // 크기 확대/축소
+    let sizeScale = 1.0;
 
     controlsEl.innerHTML = `
       <div class="space-y-3">
@@ -363,10 +461,10 @@ const SimulationEngine = {
           </div>
         </div>
         <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
-          <span class="text-xs text-slate-500 font-semibold mr-1">특수각 빠른 설정:</span>
-          <button class="btn-preset-deg clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700" data-deg="30">30°</button>
-          <button class="btn-preset-deg clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700" data-deg="45">45°</button>
-          <button class="btn-preset-deg clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700" data-deg="60">60°</button>
+          <span class="text-xs text-slate-500 font-semibold mr-1">중3 필수 특수각:</span>
+          <button class="btn-preset-deg clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700" data-deg="30">30° (1:√3:2)</button>
+          <button class="btn-preset-deg clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700" data-deg="45">45° (1:1:√2)</button>
+          <button class="btn-preset-deg clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700" data-deg="60">60° (√3:1:2)</button>
         </div>
       </div>
     `;
@@ -378,11 +476,11 @@ const SimulationEngine = {
       ctx.clearRect(0, 0, width, height);
 
       const rad = (deg * Math.PI) / 180;
-      const baseLen = 180 * sizeScale;
+      const baseLen = 170 * sizeScale;
       const heightLen = baseLen * Math.tan(rad);
       const hypLen = baseLen / Math.cos(rad);
 
-      const pBase = { x: width * 0.18, y: height * 0.8 };
+      const pBase = { x: width * 0.16, y: height * 0.82 };
       const pRight = { x: pBase.x + baseLen, y: pBase.y };
       const pTop = { x: pBase.x + baseLen, y: pBase.y - heightLen };
 
@@ -392,10 +490,20 @@ const SimulationEngine = {
       ctx.lineTo(pRight.x, pRight.y);
       ctx.lineTo(pTop.x, pTop.y);
       ctx.closePath();
-      ctx.fillStyle = "rgba(139, 92, 246, 0.12)";
+      ctx.fillStyle = "rgba(139, 92, 246, 0.15)";
       ctx.fill();
       ctx.strokeStyle = "#7c3aed";
       ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // 직각 기호
+      const mark = 12;
+      ctx.beginPath();
+      ctx.moveTo(pRight.x - mark, pRight.y);
+      ctx.lineTo(pRight.x - mark, pRight.y - mark);
+      ctx.lineTo(pRight.x, pRight.y - mark);
+      ctx.strokeStyle = "#e11d48";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       // 각도 호
@@ -405,8 +513,8 @@ const SimulationEngine = {
       ctx.lineWidth = 2.5;
       ctx.stroke();
       ctx.fillStyle = "#ec4899";
-      ctx.font = "bold 12px Pretendard";
-      ctx.fillText(`${deg}°`, pBase.x + 42, pBase.y - 12);
+      ctx.font = "bold 13px Pretendard";
+      ctx.fillText(`${deg}°`, pBase.x + 42, pBase.y - 10);
 
       // 변 길이 라벨
       ctx.font = "bold 11px Pretendard";
@@ -419,12 +527,20 @@ const SimulationEngine = {
       const cosV = Math.cos(rad).toFixed(3);
       const tanV = Math.tan(rad).toFixed(3);
 
+      let exactRatio = "";
+      if (deg === 30) exactRatio = " (특수비 1/2, √3/2, 1/√3)";
+      else if (deg === 45) exactRatio = " (특수비 √2/2, √2/2, 1)";
+      else if (deg === 60) exactRatio = " (특수비 √3/2, 1/2, √3)";
+
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="grid grid-cols-3 gap-2 font-mono text-xs sm:text-sm font-bold text-center">
             <div class="clay-inset p-2 rounded-xl bg-purple-50">sin ${deg}° = <span class="text-purple-700 font-black">${sinV}</span></div>
             <div class="clay-inset p-2 rounded-xl bg-indigo-50">cos ${deg}° = <span class="text-indigo-700 font-black">${cosV}</span></div>
             <div class="clay-inset p-2 rounded-xl bg-pink-50">tan ${deg}° = <span class="text-pink-700 font-black">${tanV}</span></div>
+          </div>
+          <div class="text-center text-[11px] text-slate-500 mt-1 font-semibold">
+            크기(${sizeScale.toFixed(1)}x)를 바꾸어도 <span class="text-indigo-600 font-bold">삼각비는 항상 일정</span>합니다! ${exactRatio}
           </div>
         `;
       }
@@ -455,39 +571,40 @@ const SimulationEngine = {
   },
 
   /* =========================================================================
-   * 4. [중3 함수] 이차함수 y = a(x - p)^2 + q (농구공 슛 궤적)
+   * 4. [중3 함수] 이차함수 y = a(x - p)^2 + q (농구 골대 슛 물리 시뮬레이션)
    * ========================================================================= */
   mountQuadratic(canvas, controlsEl, infoEl) {
     this.stop();
     this.currentSim = "quadratic";
 
-    let a = -0.5;
-    let p = 2;
-    let q = 3;
-    let ballX = -4;
+    let a = -0.3;
+    let p = 1.0;
+    let q = 3.5;
+    let ballX = -5;
     let isShooting = false;
+    let isGoal = false;
 
     controlsEl.innerHTML = `
       <div class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
-            <span>폭 a: <strong id="quadAVal" class="text-rose-600 font-mono">-0.5</strong></span>
-            <input type="range" id="quadASlider" min="-1.5" max="1.5" step="0.25" value="-0.5" class="clay-slider flex-1">
+            <span>폭 a: <strong id="quadAVal" class="text-rose-600 font-mono">-0.3</strong></span>
+            <input type="range" id="quadASlider" min="-1.0" max="-0.1" step="0.05" value="-0.3" class="clay-slider flex-1">
           </div>
           <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
-            <span>꼭짓점 p: <strong id="quadPVal" class="text-indigo-600 font-mono">2</strong></span>
-            <input type="range" id="quadPSlider" min="-4" max="4" step="1" value="2" class="clay-slider flex-1">
+            <span>꼭짓점 p: <strong id="quadPVal" class="text-indigo-600 font-mono">1.0</strong></span>
+            <input type="range" id="quadPSlider" min="-2" max="3" step="0.5" value="1.0" class="clay-slider flex-1">
           </div>
           <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
-            <span>꼭짓점 q: <strong id="quadQVal" class="text-emerald-600 font-mono">3</strong></span>
-            <input type="range" id="quadQSlider" min="-3" max="5" step="1" value="3" class="clay-slider flex-1">
+            <span>꼭짓점 q: <strong id="quadQVal" class="text-emerald-600 font-mono">3.5</strong></span>
+            <input type="range" id="quadQSlider" min="2" max="5" step="0.5" value="3.5" class="clay-slider flex-1">
           </div>
         </div>
         <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-          <button id="btnShootBall" class="clay-btn clay-btn-coral px-4 py-2 text-xs font-bold text-white flex items-center gap-1.5">
-            <i data-lucide="play" class="w-3.5 h-3.5"></i> 농구공 궤적 슛 발사!
+          <button id="btnShootBall" class="clay-btn clay-btn-coral px-4 py-2 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+            <i data-lucide="play" class="w-4 h-4"></i> 농구공 궤적 슛 발사!
           </button>
-          <span class="text-xs text-slate-500 font-semibold">대칭축: <strong class="text-indigo-600 font-mono">x = ${p}</strong></span>
+          <span class="text-xs text-slate-600 font-semibold">대칭축: <strong class="text-indigo-600 font-mono">x = ${p}</strong> | 골대 위치: x=4.5, y=1.5</span>
         </div>
       </div>
     `;
@@ -499,30 +616,66 @@ const SimulationEngine = {
 
       ctx.clearRect(0, 0, width, height);
 
-      const centerX = width / 2;
-      const centerY = height * 0.65;
-      const unit = Math.min(width, height) / 14;
+      const centerX = width * 0.45;
+      const centerY = height * 0.72;
+      const unit = Math.min(width, height) / 13;
 
-      // 축
-      ctx.strokeStyle = "#94a3b8";
+      // 농구 코트 바닥면
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(20, centerY);
+      ctx.lineTo(width - 20, centerY);
+      ctx.stroke();
+
+      // 골대 (Hoop & Backboard at x = 4.5, y = 1.5)
+      const hoopX = centerX + 4.5 * unit;
+      const hoopY = centerY - 1.5 * unit;
+
+      // 골대 기둥
+      ctx.strokeStyle = "#64748b";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(hoopX + 18, centerY);
+      ctx.lineTo(hoopX + 18, hoopY - 30);
+      ctx.stroke();
+
+      // 백보드
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(hoopX + 18, hoopY - 40);
+      ctx.lineTo(hoopX + 18, hoopY + 15);
+      ctx.stroke();
+
+      // 림 (Orange Rim)
+      ctx.strokeStyle = "#f97316";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(hoopX, hoopY);
+      ctx.lineTo(hoopX + 18, hoopY);
+      ctx.stroke();
+
+      // 그물
+      ctx.strokeStyle = "#cbd5e1";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(width, centerY);
-      ctx.moveTo(centerX, 0);
-      ctx.lineTo(centerX, height);
+      ctx.moveTo(hoopX, hoopY);
+      ctx.lineTo(hoopX + 5, hoopY + 15);
+      ctx.lineTo(hoopX + 14, hoopY + 15);
+      ctx.lineTo(hoopX + 18, hoopY);
       ctx.stroke();
 
       // 포물선 그리기
       ctx.beginPath();
-      ctx.strokeStyle = "#e11d48";
+      ctx.strokeStyle = "rgba(225, 29, 72, 0.85)";
       ctx.lineWidth = 3;
 
-      for (let x = -7; x <= 7; x += 0.1) {
+      for (let x = -6; x <= 6; x += 0.1) {
         const y = a * Math.pow(x - p, 2) + q;
         const px = centerX + x * unit;
         const py = centerY - y * unit;
-        if (x === -7) ctx.moveTo(px, py);
+        if (x === -6) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       }
       ctx.stroke();
@@ -532,8 +685,8 @@ const SimulationEngine = {
       ctx.setLineDash([4, 4]);
       ctx.strokeStyle = "#6366f1";
       ctx.lineWidth = 2;
-      ctx.moveTo(centerX + p * unit, 0);
-      ctx.lineTo(centerX + p * unit, height);
+      ctx.moveTo(centerX + p * unit, 20);
+      ctx.lineTo(centerX + p * unit, centerY);
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -550,34 +703,55 @@ const SimulationEngine = {
 
       ctx.fillStyle = "#4338ca";
       ctx.font = "bold 12px Pretendard";
-      ctx.fillText(`꼭짓점 (${p}, ${q})`, vX + 10, vY - 8);
+      ctx.fillText(`꼭짓점 (${p}, ${q})`, vX - 25, vY - 10);
 
       // 날아가는 농구공 애니메이션
       if (isShooting) {
-        const currentY = a * Math.pow(ballX - p, 2) + q;
+        const curY = a * Math.pow(ballX - p, 2) + q;
         const bPxX = centerX + ballX * unit;
-        const bPxY = centerY - currentY * unit;
+        const bPxY = centerY - curY * unit;
 
         ctx.beginPath();
-        ctx.arc(bPxX, bPxY, 10, 0, Math.PI * 2);
-        ctx.fillStyle = "#f97316";
+        ctx.arc(bPxX, bPxY, 11, 0, Math.PI * 2);
+        ctx.fillStyle = "#ea580c";
         ctx.fill();
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ballX += 0.15;
-        if (ballX > 7) {
-          isShooting = false;
-          ballX = -4;
+        // 농구공 가로/세로 리브
+        ctx.strokeStyle = "#7c2d12";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(bPxX - 10, bPxY);
+        ctx.lineTo(bPxX + 10, bPxY);
+        ctx.stroke();
+
+        ballX += 0.18;
+
+        // 골인 판정 (x=4.5, y=1.5 부근 통과)
+        if (Math.abs(ballX - 4.5) < 0.25 && Math.abs(curY - 1.5) < 0.6) {
+          isGoal = true;
         }
+
+        if (ballX > 5.8) {
+          isShooting = false;
+          ballX = -5;
+        }
+      }
+
+      if (isGoal) {
+        ctx.fillStyle = "#16a34a";
+        ctx.font = "black 20px Pretendard";
+        ctx.fillText("🏀 GOAL IN! 완벽한 슛!", hoopX - 50, hoopY - 30);
       }
 
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
-            이차함수 표준형: <span class="text-rose-600 font-black">y = ${a}(x - ${p})² + ${q}</span>
-            | ${a < 0 ? "위로 볼록 (최댓값 " + q + ")" : "아래로 볼록 (최솟값 " + q + ")"}
+            포물선 공식: <span class="text-rose-600 font-black">y = ${a}(x - ${p})² + ${q}</span>
+            | 최고점 높이: <span class="text-indigo-600 font-black">${q}</span>
+            | 꼭짓점 조절로 농구 슛을 골인시켜보세요!
           </div>
         `;
       }
@@ -591,54 +765,63 @@ const SimulationEngine = {
 
     document.getElementById("quadASlider").addEventListener("input", (e) => {
       a = parseFloat(e.target.value);
-      if (a === 0) a = 0.1;
       document.getElementById("quadAVal").textContent = a.toFixed(2);
+      isGoal = false;
       draw();
     });
 
     document.getElementById("quadPSlider").addEventListener("input", (e) => {
-      p = parseInt(e.target.value);
-      document.getElementById("quadPVal").textContent = p;
+      p = parseFloat(e.target.value);
+      document.getElementById("quadPVal").textContent = p.toFixed(1);
+      isGoal = false;
       draw();
     });
 
     document.getElementById("quadQSlider").addEventListener("input", (e) => {
-      q = parseInt(e.target.value);
-      document.getElementById("quadQVal").textContent = q;
+      q = parseFloat(e.target.value);
+      document.getElementById("quadQVal").textContent = q.toFixed(1);
+      isGoal = false;
       draw();
     });
 
     document.getElementById("btnShootBall").addEventListener("click", () => {
-      ballX = -4;
+      ballX = -5;
+      isGoal = false;
       isShooting = true;
       draw();
     });
   },
 
   /* =========================================================================
-   * 5. [중1 기하] 입체도형 회전체와 전개도
+   * 5. [중1 기하] 입체도형 회전체와 전개도 (3D 회전체 & 전개도 완벽 구현)
    * ========================================================================= */
   mountSolid(canvas, controlsEl, infoEl) {
     this.stop();
     this.currentSim = "solid";
 
     let shape = "cylinder"; // cylinder, cone, sphere
-    let rotAngle = 0; // 0 ~ 360
+    let rotAngle = 45; // 0 ~ 360
     let isSpinning = false;
+    let showNet = false; // 전개도 모드
 
     controlsEl.innerHTML = `
       <div class="space-y-3">
-        <div class="flex items-center gap-2">
-          <button class="btn-solid-tab clay-btn active px-3.5 py-1.5 text-xs font-bold" data-shape="cylinder">원기둥 (직사각형)</button>
-          <button class="btn-solid-tab clay-btn px-3.5 py-1.5 text-xs font-bold" data-shape="cone">원뿔 (직각삼각형)</button>
-          <button class="btn-solid-tab clay-btn px-3.5 py-1.5 text-xs font-bold" data-shape="sphere">구 (반원)</button>
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <button class="btn-solid-tab clay-btn active px-3.5 py-1.5 text-xs font-bold" data-shape="cylinder">원기둥</button>
+            <button class="btn-solid-tab clay-btn px-3.5 py-1.5 text-xs font-bold" data-shape="cone">원뿔</button>
+            <button class="btn-solid-tab clay-btn px-3.5 py-1.5 text-xs font-bold" data-shape="sphere">구</button>
+          </div>
+          <button id="btnToggleNet" class="clay-btn clay-btn-secondary px-3.5 py-1.5 text-xs font-bold text-indigo-700">
+            전개도 펼치기/접기
+          </button>
         </div>
         <div class="flex items-center justify-between gap-3 pt-1 border-t border-slate-100">
           <div class="flex items-center gap-2 text-xs font-bold text-slate-700 flex-1">
-            <span>회전각: <strong id="rotAngleVal" class="text-emerald-600 font-mono">0°</strong></span>
-            <input type="range" id="rotAngleSlider" min="0" max="360" value="0" class="clay-slider flex-1">
+            <span>회전각: <strong id="rotAngleVal" class="text-emerald-600 font-mono">45°</strong></span>
+            <input type="range" id="rotAngleSlider" min="0" max="360" value="45" class="clay-slider flex-1">
           </div>
-          <button id="btnSpinSolid" class="clay-btn clay-btn-primary px-3 py-1.5 text-xs font-bold text-white">
+          <button id="btnSpinSolid" class="clay-btn clay-btn-primary px-3.5 py-1.5 text-xs font-bold text-white">
             360° 연속 회전
           </button>
         </div>
@@ -653,88 +836,202 @@ const SimulationEngine = {
 
       const centerX = width / 2;
       const centerY = height / 2;
+      const r = 85;
+      const h = 130;
 
-      // 회전축
-      ctx.beginPath();
-      ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = "#e11d48";
-      ctx.lineWidth = 2;
-      ctx.moveTo(centerX, 20);
-      ctx.lineTo(centerX, height - 20);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = "#e11d48";
-      ctx.font = "bold 11px Pretendard";
-      ctx.fillText("회전축 L", centerX + 8, 30);
+      if (showNet) {
+        // --- 전개도 모드 ---
+        ctx.fillStyle = "#1e293b";
+        ctx.font = "bold 13px Pretendard";
 
-      const r = 90;
-      const h = 140;
+        if (shape === "cylinder") {
+          ctx.fillText("원기둥 전개도 (직사각형 옆면 + 밑면 원 2개)", 30, 30);
+          // 직사각형 옆면 (가로 = 2*pi*r, 세로 = h)
+          const netW = 220;
+          const netH = 100;
+          const netX = centerX - netW / 2;
+          const netY = centerY - netH / 2;
 
-      // 3D 회전체 표면 윤곽 렌더링
-      const rad = (rotAngle * Math.PI) / 180;
-      ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
-      ctx.strokeStyle = "#059669";
-      ctx.lineWidth = 2.5;
+          ctx.fillStyle = "rgba(99, 102, 241, 0.2)";
+          ctx.fillRect(netX, netY, netW, netH);
+          ctx.strokeStyle = "#4f46e5";
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(netX, netY, netW, netH);
 
-      if (shape === "cylinder") {
-        // 직사각형이 회전한 원기둥
-        ctx.beginPath();
-        ctx.ellipse(centerX, centerY - h / 2, r * Math.sin(rad), 20, 0, 0, Math.PI * 2);
-        ctx.ellipse(centerX, centerY + h / 2, r * Math.sin(rad), 20, 0, 0, Math.PI * 2);
-        ctx.rect(centerX, centerY - h / 2, r * Math.cos(rad), h);
-        ctx.fill();
-        ctx.stroke();
+          // 위/아래 원
+          ctx.beginPath();
+          ctx.arc(centerX, netY - 26, 26, 0, Math.PI * 2);
+          ctx.arc(centerX, netY + netH + 26, 26, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
+          ctx.fill();
+          ctx.strokeStyle = "#059669";
+          ctx.stroke();
 
-        // 2D 단면
-        ctx.fillStyle = "rgba(99, 102, 241, 0.4)";
-        ctx.fillRect(centerX, centerY - h / 2, r, h);
-        ctx.strokeRect(centerX, centerY - h / 2, r, h);
-      } else if (shape === "cone") {
-        // 직각삼각형이 회전한 원뿔
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY - h / 2);
-        ctx.lineTo(centerX + r * Math.cos(rad), centerY + h / 2);
-        ctx.lineTo(centerX - r * Math.cos(rad), centerY + h / 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+          ctx.fillStyle = "#4338ca";
+          ctx.font = "bold 11px Pretendard";
+          ctx.fillText("가로 = 2πr (밑면 둘레)", netX + 40, netY + netH / 2);
+          ctx.fillText("세로 = h", netX - 45, netY + netH / 2);
+        } else if (shape === "cone") {
+          ctx.fillText("원뿔 전개도 (부채꼴 옆면 + 밑면 원 1개)", 30, 30);
+          // 부채꼴 (모선 R, 호의 길이 2*pi*r)
+          const apexX = centerX;
+          const apexY = centerY - 50;
+          const sectorR = 120;
+          const sectorAngle = Math.PI * 0.75; // 135도
 
-        ctx.ellipse(centerX, centerY + h / 2, r * Math.abs(Math.sin(rad)), 20, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(apexX, apexY);
+          ctx.arc(apexX, apexY, sectorR, Math.PI / 2 - sectorAngle / 2, Math.PI / 2 + sectorAngle / 2);
+          ctx.closePath();
+          ctx.fillStyle = "rgba(244, 63, 94, 0.2)";
+          ctx.fill();
+          ctx.strokeStyle = "#e11d48";
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
 
-        // 2D 단면
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY - h / 2);
-        ctx.lineTo(centerX + r, centerY + h / 2);
-        ctx.lineTo(centerX, centerY + h / 2);
-        ctx.closePath();
-        ctx.fillStyle = "rgba(99, 102, 241, 0.4)";
-        ctx.fill();
-        ctx.stroke();
+          // 밑면 원
+          ctx.beginPath();
+          ctx.arc(apexX, apexY + sectorR + 25, 25, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
+          ctx.fill();
+          ctx.strokeStyle = "#059669";
+          ctx.stroke();
+
+          ctx.fillStyle = "#9f1239";
+          ctx.font = "bold 11px Pretendard";
+          ctx.fillText("모선 (l)", apexX - 45, apexY + 50);
+          ctx.fillText("호의 길이 = 2πr", apexX - 35, apexY + sectorR - 10);
+        } else {
+          ctx.fillText("구의 성질 (어느 방향으로 잘라도 단면은 항상 원)", 30, 30);
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, 80, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(139, 92, 246, 0.2)";
+          ctx.fill();
+          ctx.strokeStyle = "#7c3aed";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY, 80, 25, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = "#6366f1";
+          ctx.stroke();
+
+          ctx.fillStyle = "#4c1d95";
+          ctx.font = "bold 12px Pretendard";
+          ctx.fillText("구는 평면으로 펼칠 수 없는 입체입니다", centerX - 95, centerY + 115);
+        }
       } else {
-        // 반원이 회전한 구
+        // --- 3D 회전체 모드 ---
+        // 회전축 L
         ctx.beginPath();
-        ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = "#e11d48";
+        ctx.lineWidth = 2;
+        ctx.moveTo(centerX, 20);
+        ctx.lineTo(centerX, height - 20);
         ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#e11d48";
+        ctx.font = "bold 11px Pretendard";
+        ctx.fillText("회전축 L", centerX + 8, 30);
 
-        ctx.beginPath();
-        ctx.ellipse(centerX, centerY, r, r * Math.abs(Math.sin(rad)), 0, 0, Math.PI * 2);
-        ctx.stroke();
+        const rad = (rotAngle * Math.PI) / 180;
+        const cosR = Math.cos(rad);
+        const sinR = Math.sin(rad);
+
+        // 3D 셰이딩 표면
+        ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
+        ctx.strokeStyle = "#059669";
+        ctx.lineWidth = 2.5;
+
+        if (shape === "cylinder") {
+          // 윗면/밑면 타원
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY - h / 2, r, Math.max(4, r * 0.25), 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY + h / 2, r, Math.max(4, r * 0.25), 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // 옆면 테두리
+          ctx.beginPath();
+          ctx.moveTo(centerX - r, centerY - h / 2);
+          ctx.lineTo(centerX - r, centerY + h / 2);
+          ctx.moveTo(centerX + r, centerY - h / 2);
+          ctx.lineTo(centerX + r, centerY + h / 2);
+          ctx.stroke();
+
+          // 회전하는 2D 단면 (직사각형)
+          ctx.fillStyle = "rgba(99, 102, 241, 0.5)";
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY - h / 2);
+          ctx.lineTo(centerX + r * cosR, centerY - h / 2 + 15 * sinR);
+          ctx.lineTo(centerX + r * cosR, centerY + h / 2 + 15 * sinR);
+          ctx.lineTo(centerX, centerY + h / 2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#4338ca";
+          ctx.stroke();
+        } else if (shape === "cone") {
+          // 밑면 타원
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY + h / 2, r, Math.max(4, r * 0.25), 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // 옆선
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY - h / 2);
+          ctx.lineTo(centerX - r, centerY + h / 2);
+          ctx.moveTo(centerX, centerY - h / 2);
+          ctx.lineTo(centerX + r, centerY + h / 2);
+          ctx.stroke();
+
+          // 회전하는 2D 단면 (직각삼각형)
+          ctx.fillStyle = "rgba(99, 102, 241, 0.5)";
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY - h / 2);
+          ctx.lineTo(centerX + r * cosR, centerY + h / 2 + 15 * sinR);
+          ctx.lineTo(centerX, centerY + h / 2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#4338ca";
+          ctx.stroke();
+        } else {
+          // 구
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY, r, Math.max(4, r * 0.3), 0, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // 회전하는 반원 단면
+          ctx.fillStyle = "rgba(99, 102, 241, 0.5)";
+          ctx.beginPath();
+          ctx.ellipse(centerX, centerY, r * Math.abs(cosR), r, 0, -Math.PI / 2, Math.PI / 2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
       }
 
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
-            평면도형 1회전 → <span class="text-emerald-700 font-black">${shape === "cylinder" ? "직사각형 → 원기둥" : shape === "cone" ? "직각삼각형 → 원뿔" : "반원 → 구"}</span> 
-            | 회전축을 포함하는 평면으로 자른 단면은 항상 <span class="text-indigo-600 font-bold">선대칭도형</span>입니다.
+            ${showNet ? "전개도 모드: 입체도형을 평면으로 펼쳤을 때의 모양과 공식" : "3D 회전 모드: 평면도형을 360° 회전시켜 입체도형 생성"}
+            | 부피 관계: <span class="text-indigo-600 font-black">원뿔 : 구 : 원기둥 = 1 : 2 : 3</span>
           </div>
         `;
       }
 
-      if (isSpinning) {
-        rotAngle = (rotAngle + 4) % 360;
+      if (isSpinning && !showNet) {
+        rotAngle = (rotAngle + 3) % 360;
         document.getElementById("rotAngleSlider").value = rotAngle;
         document.getElementById("rotAngleVal").textContent = `${rotAngle}°`;
         SimulationEngine.animId = requestAnimationFrame(draw);
@@ -752,7 +1049,14 @@ const SimulationEngine = {
 
     document.getElementById("btnSpinSolid").addEventListener("click", () => {
       isSpinning = !isSpinning;
+      showNet = false;
       if (isSpinning) draw();
+    });
+
+    document.getElementById("btnToggleNet").addEventListener("click", () => {
+      showNet = !showNet;
+      isSpinning = false;
+      draw();
     });
 
     document.querySelectorAll(".btn-solid-tab").forEach((tab) => {
@@ -766,20 +1070,20 @@ const SimulationEngine = {
   },
 
   /* =========================================================================
-   * 6. [중2 기하] 삼각형의 외심과 내심 실시간 작도기 (점 드래그)
+   * 6. [중2 기하] 삼각형의 외심과 내심 실시간 작도기 (터치/마우스 드래그 & 이등분선)
    * ========================================================================= */
   mountIncenter(canvas, controlsEl, infoEl) {
     this.stop();
     this.currentSim = "incenter";
 
     let pts = [
-      { x: 180, y: 70, name: "A" },
-      { x: 70, y: 240, name: "B" },
-      { x: 320, y: 240, name: "C" }
+      { x: 190, y: 65, name: "A" },
+      { x: 70, y: 250, name: "B" },
+      { x: 340, y: 250, name: "C" }
     ];
     let draggedPt = null;
-    let showCircum = true; // 외심
-    let showIn = true; // 내심
+    let showCircum = true;
+    let showIn = true;
 
     controlsEl.innerHTML = `
       <div class="space-y-3">
@@ -787,16 +1091,16 @@ const SimulationEngine = {
           <div class="flex items-center gap-4 text-xs font-bold text-slate-700">
             <label class="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" id="chkCircum" checked class="rounded text-indigo-600">
-              <span class="text-indigo-700">외심 (O) & 외접원</span>
+              <span class="text-indigo-700">외심 (O) & 외접원 (수직이등분선)</span>
             </label>
             <label class="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" id="chkIncenter" checked class="rounded text-rose-600">
-              <span class="text-rose-700">내심 (I) & 내접원</span>
+              <span class="text-rose-700">내심 (I) & 내접원 (각의 이등분선)</span>
             </label>
           </div>
           <div class="flex items-center gap-1.5">
-            <button id="btnAcute" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold">예각</button>
-            <button id="btnRight" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-indigo-700">직각(빗변중점)</button>
+            <button id="btnAcute" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold">예각삼각형</button>
+            <button id="btnRight" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-indigo-700 border-indigo-300">직각(빗변중점!)</button>
             <button id="btnObtuse" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-amber-700">둔각(외부)</button>
           </div>
         </div>
@@ -817,91 +1121,141 @@ const SimulationEngine = {
       ctx.lineTo(B.x, B.y);
       ctx.lineTo(C.x, C.y);
       ctx.closePath();
-      ctx.fillStyle = "rgba(241, 245, 249, 0.6)";
+      ctx.fillStyle = "rgba(241, 245, 249, 0.7)";
       ctx.fill();
       ctx.strokeStyle = "#334155";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.stroke();
 
-      // 변 길이
+      // 세 변의 길이
       const a = Math.hypot(B.x - C.x, B.y - C.y);
       const b = Math.hypot(A.x - C.x, A.y - C.y);
       const c = Math.hypot(A.x - B.x, A.y - B.y);
 
-      // 내심 계산: (a*A + b*B + c*C) / (a + b + c)
+      // 내심 계산: (aA + bB + cC)/(a+b+c)
       const p = a + b + c;
       const inX = (a * A.x + b * B.x + c * C.x) / p;
       const inY = (a * A.y + b * B.y + c * C.y) / p;
-      // 내접원 반지름: s = p/2, Area = sqrt(s(s-a)(s-b)(s-c)), r = Area / s
       const s = p / 2;
       const area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
       const inR = area / s;
 
       // 외심 계산
       const d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
-      const circumX =
-        ((A.x ** 2 + A.y ** 2) * (B.y - C.y) +
-          (B.x ** 2 + B.y ** 2) * (C.y - A.y) +
-          (C.x ** 2 + C.y ** 2) * (A.y - B.y)) /
-        d;
-      const circumY =
-        ((A.x ** 2 + A.y ** 2) * (C.x - B.x) +
-          (B.x ** 2 + B.y ** 2) * (A.x - C.x) +
-          (C.x ** 2 + C.y ** 2) * (B.x - A.x)) /
-        d;
-      const circumR = Math.hypot(A.x - circumX, A.y - circumY);
+      let circumX = 0, circumY = 0, circumR = 0;
+      if (Math.abs(d) > 0.001) {
+        circumX =
+          ((A.x ** 2 + A.y ** 2) * (B.y - C.y) +
+            (B.x ** 2 + B.y ** 2) * (C.y - A.y) +
+            (C.x ** 2 + C.y ** 2) * (A.y - B.y)) /
+          d;
+        circumY =
+          ((A.x ** 2 + A.y ** 2) * (C.x - B.x) +
+            (B.x ** 2 + B.y ** 2) * (A.x - C.x) +
+            (C.x ** 2 + C.y ** 2) * (B.x - A.x)) /
+          d;
+        circumR = Math.hypot(A.x - circumX, A.y - circumY);
+      }
 
-      // 외심 & 외접원 렌더링
-      if (showCircum && Math.abs(d) > 0.01) {
+      // 1. 외심 작도선(세 변의 수직이등분선) & 외접원
+      if (showCircum && circumR > 0 && circumR < 600) {
+        // 수직이등분선 표시 (점선)
+        const midAB = { x: (A.x + B.x) / 2, y: (A.y + B.y) / 2 };
+        const midBC = { x: (B.x + C.x) / 2, y: (B.y + C.y) / 2 };
+        const midCA = { x: (C.x + A.x) / 2, y: (C.y + A.y) / 2 };
+
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = "rgba(79, 70, 229, 0.4)";
+        ctx.lineWidth = 1.5;
+
+        [midAB, midBC, midCA].forEach((m) => {
+          ctx.beginPath();
+          ctx.moveTo(m.x, m.y);
+          ctx.lineTo(circumX, circumY);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+
+        // 외접원
         ctx.beginPath();
         ctx.arc(circumX, circumY, circumR, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(79, 70, 229, 0.45)";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#4f46e5";
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
+        // 외심 O 점
         ctx.beginPath();
         ctx.arc(circumX, circumY, 6, 0, Math.PI * 2);
         ctx.fillStyle = "#4f46e5";
         ctx.fill();
-        ctx.fillText("외심 O", circumX + 8, circumY - 4);
-      }
-
-      // 내심 & 내접원 렌더링
-      if (showIn && inR > 0) {
-        ctx.beginPath();
-        ctx.arc(inX, inY, inR, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(225, 29, 72, 0.5)";
+        ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.stroke();
 
+        ctx.fillStyle = "#312e81";
+        ctx.font = "bold 12px Pretendard";
+        ctx.fillText("외심 O", circumX + 8, circumY - 4);
+      }
+
+      // 2. 내심 작도선(세 내각의 이등분선) & 내접원
+      if (showIn && inR > 0) {
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = "rgba(225, 29, 72, 0.4)";
+        ctx.lineWidth = 1.5;
+
+        [A, B, C].forEach((vertex) => {
+          ctx.beginPath();
+          ctx.moveTo(vertex.x, vertex.y);
+          ctx.lineTo(inX, inY);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+
+        // 내접원
+        ctx.beginPath();
+        ctx.arc(inX, inY, inR, 0, Math.PI * 2);
+        ctx.strokeStyle = "#e11d48";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 내심 I 점
         ctx.beginPath();
         ctx.arc(inX, inY, 6, 0, Math.PI * 2);
         ctx.fillStyle = "#e11d48";
         ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#881337";
+        ctx.font = "bold 12px Pretendard";
         ctx.fillText("내심 I", inX + 8, inY - 4);
       }
 
-      // 꼭짓점 A, B, C 표시 (드래그 가능 핸들)
+      // 꼭짓점 A, B, C (터치/드래그 핸들)
       pts.forEach((pt) => {
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 8, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, 9, 0, Math.PI * 2);
         ctx.fillStyle = "#ffffff";
         ctx.fill();
         ctx.strokeStyle = "#059669";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
         ctx.stroke();
 
         ctx.fillStyle = "#065f46";
-        ctx.font = "bold 13px Pretendard";
-        ctx.fillText(pt.name, pt.x - 4, pt.y - 12);
+        ctx.font = "bold 14px Pretendard";
+        ctx.fillText(pt.name, pt.x - 5, pt.y - 14);
       });
+
+      // 판별 안내
+      const isRight = Math.abs(a * a + b * b - c * c) < 200 || Math.abs(b * b + c * c - a * a) < 200 || Math.abs(c * c + a * a - b * b) < 200;
 
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
-            꼭짓점을 마우스로 드래그해보세요! | 
-            <span class="text-indigo-600">외심: 세 변의 수직이등분선의 교점</span> | 
-            <span class="text-rose-600">내심: 세 내각의 이등분선의 교점</span>
+            꼭짓점 A, B, C를 드래그해보세요! | 
+            <span class="text-indigo-600">외심: ${isRight ? "★ 직각삼각형 빗변의 중점!" : "세 변의 수직이등분선 교점"}</span> | 
+            <span class="text-rose-600">내심: 항상 삼각형 내부 (각의 이등분선 교점)</span>
           </div>
         `;
       }
@@ -909,29 +1263,53 @@ const SimulationEngine = {
 
     draw();
 
-    // 드래그 마우스 이벤트 바인딩
-    canvas.onmousedown = (e) => {
+    // 마우스 및 터치 이벤트 핸들러 통합
+    function getPointerPos(e) {
       const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
 
+    function onPointerDown(e) {
+      const pos = getPointerPos(e);
       pts.forEach((pt) => {
-        if (Math.hypot(pt.x - mouseX, pt.y - mouseY) < 20) {
+        if (Math.hypot(pt.x - pos.x, pt.y - pos.y) < 25) {
           draggedPt = pt;
         }
       });
-    };
+      if (draggedPt && e.touches) e.preventDefault();
+    }
 
-    window.onmousemove = (e) => {
+    function onPointerMove(e) {
       if (!draggedPt) return;
       const rect = canvas.getBoundingClientRect();
-      draggedPt.x = Math.max(30, Math.min(rect.width - 30, e.clientX - rect.left));
-      draggedPt.y = Math.max(30, Math.min(rect.height - 30, e.clientY - rect.top));
+      const pos = getPointerPos(e);
+      draggedPt.x = Math.max(30, Math.min(rect.width - 30, pos.x));
+      draggedPt.y = Math.max(30, Math.min(rect.height - 30, pos.y));
       draw();
-    };
+      if (e.touches) e.preventDefault();
+    }
 
-    window.onmouseup = () => {
+    function onPointerUp() {
       draggedPt = null;
+    }
+
+    canvas.addEventListener("mousedown", onPointerDown);
+    window.addEventListener("mousemove", onPointerMove);
+    window.addEventListener("mouseup", onPointerUp);
+
+    canvas.addEventListener("touchstart", onPointerDown, { passive: false });
+    window.addEventListener("touchmove", onPointerMove, { passive: false });
+    window.addEventListener("touchend", onPointerUp);
+
+    this.cleanupHandlers = () => {
+      canvas.removeEventListener("mousedown", onPointerDown);
+      window.removeEventListener("mousemove", onPointerMove);
+      window.removeEventListener("mouseup", onPointerUp);
+      canvas.removeEventListener("touchstart", onPointerDown);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchend", onPointerUp);
     };
 
     document.getElementById("chkCircum").addEventListener("change", (e) => {
@@ -946,47 +1324,87 @@ const SimulationEngine = {
 
     document.getElementById("btnAcute").addEventListener("click", () => {
       pts[0] = { x: 200, y: 60, name: "A" };
-      pts[1] = { x: 80, y: 240, name: "B" };
-      pts[2] = { x: 320, y: 240, name: "C" };
+      pts[1] = { x: 80, y: 250, name: "B" };
+      pts[2] = { x: 330, y: 250, name: "C" };
       draw();
     });
 
     document.getElementById("btnRight").addEventListener("click", () => {
-      pts[0] = { x: 80, y: 80, name: "A" };
-      pts[1] = { x: 80, y: 240, name: "B" };
-      pts[2] = { x: 320, y: 240, name: "C" };
+      pts[0] = { x: 80, y: 70, name: "A" };
+      pts[1] = { x: 80, y: 250, name: "B" };
+      pts[2] = { x: 330, y: 250, name: "C" };
       draw();
     });
 
     document.getElementById("btnObtuse").addEventListener("click", () => {
-      pts[0] = { x: 300, y: 180, name: "A" };
-      pts[1] = { x: 60, y: 240, name: "B" };
-      pts[2] = { x: 340, y: 240, name: "C" };
+      pts[0] = { x: 300, y: 190, name: "A" };
+      pts[1] = { x: 60, y: 250, name: "B" };
+      pts[2] = { x: 340, y: 250, name: "C" };
       draw();
     });
   },
 
   /* =========================================================================
-   * 7. [중1 수와 연산] 에라토스테네스의 체 & 소인수분해 트리
+   * 7. [중1 수와 연산] 에라토스테네스의 체 & 소인수분해 가지치기 트리
    * ========================================================================= */
   mountPrime(canvas, controlsEl, infoEl) {
     this.stop();
     this.currentSim = "prime";
 
-    // 1부터 100까지 격자 생성
-    let eliminated = new Set([1]); // 1은 소수가 아님
+    let subMode = "sieve"; // "sieve" or "tree"
+    let eliminated = new Set([1]);
+    let targetNum = 60;
 
     controlsEl.innerHTML = `
       <div class="space-y-3">
-        <div class="flex items-center gap-2 flex-wrap">
-          <button id="btnElim2" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-blue-700">2의 배수 지우기</button>
-          <button id="btnElim3" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-purple-700">3의 배수 지우기</button>
-          <button id="btnElim5" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-amber-700">5의 배수 지우기</button>
-          <button id="btnElim7" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-rose-700">7의 배수 지우기</button>
-          <button id="btnResetPrimes" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-slate-600">초기화</button>
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <button id="tabSieve" class="clay-btn active px-3.5 py-1.5 text-xs font-bold">1~100 에라토스테네스의 체</button>
+            <button id="tabTree" class="clay-btn px-3.5 py-1.5 text-xs font-bold text-slate-600">소인수분해 가지치기 트리</button>
+          </div>
+          <div id="treeInputWrap" class="hidden flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-700">자연수:</span>
+            <input type="number" id="numInput" value="60" min="4" max="120" class="clay-inset px-2.5 py-1 w-20 text-xs font-mono font-bold text-center">
+            <button id="btnFactorize" class="clay-btn clay-btn-primary px-3 py-1 text-xs font-bold text-white">분해하기</button>
+          </div>
+        </div>
+        <div id="sieveButtons" class="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-100">
+          <button id="btnElim2" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-blue-700">2의 배수 지우기</button>
+          <button id="btnElim3" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-purple-700">3의 배수 지우기</button>
+          <button id="btnElim5" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-amber-700">5의 배수 지우기</button>
+          <button id="btnElim7" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-rose-700">7의 배수 지우기</button>
+          <button id="btnResetPrimes" class="clay-btn clay-btn-secondary px-3 py-1 text-xs font-bold text-slate-600">초기화</button>
         </div>
       </div>
     `;
+
+    // 소인수분해 트리 생성 헬퍼
+    function getFactorTree(n) {
+      if (n <= 1) return { val: n, isPrime: false };
+      for (let d = 2; d * d <= n; d++) {
+        if (n % d === 0) {
+          return {
+            val: n,
+            left: { val: d, isPrime: true },
+            right: getFactorTree(n / d)
+          };
+        }
+      }
+      return { val: n, isPrime: true };
+    }
+
+    function getPrimeFactorsMap(n) {
+      const map = {};
+      let temp = n;
+      for (let d = 2; d * d <= temp; d++) {
+        while (temp % d === 0) {
+          map[d] = (map[d] || 0) + 1;
+          temp /= d;
+        }
+      }
+      if (temp > 1) map[temp] = (map[temp] || 0) + 1;
+      return map;
+    }
 
     const draw = () => {
       if (SimulationEngine.currentSim !== "prime") return;
@@ -994,46 +1412,111 @@ const SimulationEngine = {
 
       ctx.clearRect(0, 0, width, height);
 
-      const cols = 10;
-      const rows = 10;
-      const cellW = width / cols;
-      const cellH = height / rows;
+      if (subMode === "sieve") {
+        // --- 1~100 격자 뷰 ---
+        const cols = 10;
+        const rows = 10;
+        const cellW = width / cols;
+        const cellH = height / rows;
 
-      for (let i = 1; i <= 100; i++) {
-        const col = (i - 1) % cols;
-        const row = Math.floor((i - 1) / cols);
-        const x = col * cellW;
-        const y = row * cellH;
+        for (let i = 1; i <= 100; i++) {
+          const col = (i - 1) % cols;
+          const row = Math.floor((i - 1) / cols);
+          const x = col * cellW;
+          const y = row * cellH;
 
-        const isOut = eliminated.has(i);
-        const isPrimeCandidate = !isOut && i > 1;
+          const isOut = eliminated.has(i);
+          const isPrimeCandidate = !isOut && i > 1;
 
-        ctx.fillStyle = isPrimeCandidate ? "rgba(16, 185, 129, 0.2)" : isOut ? "#f1f5f9" : "#ffffff";
-        ctx.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
-        ctx.strokeStyle = isPrimeCandidate ? "#10b981" : "#cbd5e1";
-        ctx.strokeRect(x + 2, y + 2, cellW - 4, cellH - 4);
+          ctx.fillStyle = isPrimeCandidate ? "rgba(16, 185, 129, 0.25)" : isOut ? "#f8fafc" : "#ffffff";
+          ctx.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
+          ctx.strokeStyle = isPrimeCandidate ? "#10b981" : "#e2e8f0";
+          ctx.strokeRect(x + 2, y + 2, cellW - 4, cellH - 4);
 
-        ctx.fillStyle = isPrimeCandidate ? "#047857" : isOut ? "#94a3b8" : "#1e293b";
-        ctx.font = isPrimeCandidate ? "bold 13px Pretendard" : "11px Pretendard";
-        ctx.fillText(i, x + cellW / 2 - 8, y + cellH / 2 + 4);
+          ctx.fillStyle = isPrimeCandidate ? "#047857" : isOut ? "#cbd5e1" : "#1e293b";
+          ctx.font = isPrimeCandidate ? "bold 13px Pretendard" : "11px Pretendard";
+          ctx.fillText(i, x + cellW / 2 - 8, y + cellH / 2 + 4);
 
-        if (isOut) {
-          ctx.beginPath();
-          ctx.moveTo(x + 4, y + 4);
-          ctx.lineTo(x + cellW - 4, y + cellH - 4);
-          ctx.strokeStyle = "#cbd5e1";
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
+          if (isOut) {
+            ctx.beginPath();
+            ctx.moveTo(x + 4, y + 4);
+            ctx.lineTo(x + cellW - 4, y + cellH - 4);
+            ctx.strokeStyle = "#e2e8f0";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
         }
-      }
 
-      if (infoEl) {
-        const primeCount = 100 - eliminated.size;
-        infoEl.innerHTML = `
-          <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
-            소수란 1보다 큰 자연수 중 1과 자기 자신만을 약수로 가지는 수 | 남은 소수 후보: <span class="text-emerald-600 font-black">${primeCount}개</span>
-          </div>
-        `;
+        if (infoEl) {
+          const primeCount = 100 - eliminated.size;
+          infoEl.innerHTML = `
+            <div class="font-mono text-xs sm:text-sm font-bold text-slate-800">
+              에라토스테네스의 체: 2, 3, 5, 7의 배수를 모두 지우면 100 이하의 모든 소수(<span class="text-emerald-600 font-black">${primeCount}개</span>)가 나타납니다!
+            </div>
+          `;
+        }
+      } else {
+        // --- 소인수분해 가지치기 트리 뷰 ---
+        const tree = getFactorTree(targetNum);
+        const map = getPrimeFactorsMap(targetNum);
+
+        // 지수 표기 포맷팅 (e.g. 2^2 × 3 × 5)
+        const expStr = Object.keys(map)
+          .map((base) => (map[base] > 1 ? `${base}<sup>${map[base]}</sup>` : base))
+          .join(" × ");
+
+        ctx.fillStyle = "#1e293b";
+        ctx.font = "bold 14px Pretendard";
+        ctx.fillText(`소인수분해 트리: ${targetNum}`, 30, 30);
+
+        function drawNode(node, x, y, dx) {
+          if (!node) return;
+
+          // 자식 노드가 있으면 가지치기 선 먼저 그리기
+          if (node.left && node.right) {
+            const leftX = x - dx;
+            const leftY = y + 55;
+            const rightX = x + dx;
+            const rightY = y + 55;
+
+            ctx.strokeStyle = "#94a3b8";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y + 14);
+            ctx.lineTo(leftX, leftY - 14);
+            ctx.moveTo(x, y + 14);
+            ctx.lineTo(rightX, rightY - 14);
+            ctx.stroke();
+
+            drawNode(node.left, leftX, leftY, dx * 0.55);
+            drawNode(node.right, rightX, rightY, dx * 0.55);
+          }
+
+          // 노드 원 그리기
+          ctx.beginPath();
+          ctx.arc(x, y, 16, 0, Math.PI * 2);
+          ctx.fillStyle = node.isPrime ? "#10b981" : "#4f46e5";
+          ctx.fill();
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 12px Pretendard";
+          ctx.fillText(node.val, x - (node.val > 9 ? 8 : 4), y + 4);
+        }
+
+        drawNode(tree, width / 2, 65, 80);
+
+        if (infoEl) {
+          infoEl.innerHTML = `
+            <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between">
+              <span>수: <strong class="text-indigo-600">${targetNum}</strong></span>
+              <span>거듭제곱 꼴 소인수분해 결과: <strong class="text-emerald-700 font-black text-base">${targetNum} = ${expStr}</strong></span>
+              <span class="text-[11px] text-slate-500">(초록색 노드 = 소인수)</span>
+            </div>
+          `;
+        }
       }
     };
 
@@ -1054,10 +1537,42 @@ const SimulationEngine = {
       eliminated = new Set([1]);
       draw();
     });
+
+    const tabSieve = document.getElementById("tabSieve");
+    const tabTree = document.getElementById("tabTree");
+    const sieveBtns = document.getElementById("sieveButtons");
+    const treeWrap = document.getElementById("treeInputWrap");
+
+    tabSieve.addEventListener("click", () => {
+      subMode = "sieve";
+      tabSieve.classList.add("active", "clay-btn-primary");
+      tabTree.classList.remove("active", "clay-btn-primary");
+      sieveBtns.classList.remove("hidden");
+      treeWrap.classList.add("hidden");
+      draw();
+    });
+
+    tabTree.addEventListener("click", () => {
+      subMode = "tree";
+      tabTree.classList.add("active", "clay-btn-primary");
+      tabSieve.classList.remove("active", "clay-btn-primary");
+      sieveBtns.classList.add("hidden");
+      treeWrap.classList.remove("hidden");
+      draw();
+    });
+
+    document.getElementById("btnFactorize").addEventListener("click", () => {
+      const input = document.getElementById("numInput");
+      const val = parseInt(input.value);
+      if (val >= 2 && val <= 200) {
+        targetNum = val;
+        draw();
+      }
+    });
   },
 
   /* =========================================================================
-   * 8. [중3 통계] 산점도와 상관관계 & 대푯값 저울
+   * 8. [중3 통계] 산점도 & 대푯값 시소 저울 (이상치에 따른 평균/중앙값 비교)
    * ========================================================================= */
   mountScatter(canvas, controlsEl, infoEl) {
     this.stop();
@@ -1066,9 +1581,9 @@ const SimulationEngine = {
     let points = [
       { x: 2, y: 3 },
       { x: 3, y: 4 },
-      { x: 5, y: 6 },
-      { x: 6, y: 7 },
-      { x: 8, y: 9 }
+      { x: 5, y: 5 },
+      { x: 6, y: 6 },
+      { x: 7, y: 7 }
     ];
 
     controlsEl.innerHTML = `
@@ -1079,8 +1594,8 @@ const SimulationEngine = {
             <button id="btnNegCorr" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-rose-700">음의 상관관계</button>
             <button id="btnNoCorr" class="clay-btn clay-btn-secondary px-3 py-1.5 text-xs font-bold text-slate-700">상관관계 없음</button>
           </div>
-          <button id="btnAddOutlier" class="clay-btn clay-btn-coral px-3 py-1.5 text-xs font-bold text-white">
-            극단값(이상치) 추가
+          <button id="btnAddOutlier" class="clay-btn clay-btn-coral px-3.5 py-1.5 text-xs font-bold text-white shadow-md">
+            극단값(이상치 x=9, y=10) 추가!
           </button>
         </div>
       </div>
@@ -1092,29 +1607,29 @@ const SimulationEngine = {
 
       ctx.clearRect(0, 0, width, height);
 
+      // 상단 60%: 산점도 그래프
+      const plotH = height * 0.58;
       const margin = 40;
       const plotW = width - margin * 2;
-      const plotH = height - margin * 2;
 
-      // 축
       ctx.strokeStyle = "#94a3b8";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(margin, height - margin);
-      ctx.lineTo(width - margin, height - margin);
-      ctx.moveTo(margin, margin);
-      ctx.lineTo(margin, height - margin);
+      ctx.moveTo(margin, plotH - 10);
+      ctx.lineTo(width - margin, plotH - 10);
+      ctx.moveTo(margin, 20);
+      ctx.lineTo(margin, plotH - 10);
       ctx.stroke();
 
       ctx.font = "bold 11px Pretendard";
       ctx.fillStyle = "#64748b";
-      ctx.fillText("수학 공부 시간 (x)", width - margin - 80, height - margin + 25);
-      ctx.fillText("시험 성적 (y)", margin - 15, margin - 12);
+      ctx.fillText("공부 시간 (x)", width - margin - 75, plotH + 8);
+      ctx.fillText("성적 (y)", margin - 15, 16);
 
-      // 점 렌더링
+      // 데이터 점 렌더링
       points.forEach((pt) => {
         const px = margin + (pt.x / 10) * plotW;
-        const py = height - margin - (pt.y / 10) * plotH;
+        const py = plotH - 10 - (pt.y / 10) * (plotH - 30);
 
         ctx.beginPath();
         ctx.arc(px, py, 6, 0, Math.PI * 2);
@@ -1125,18 +1640,66 @@ const SimulationEngine = {
         ctx.stroke();
       });
 
+      // --- 하단 40%: 대푯값 시소 저울 시뮬레이터 (Seesaw) ---
+      const seesawY = height * 0.84;
+      const fulcrumX = width / 2;
+      const seesawLen = width * 0.7;
+
       // 평균 & 중앙값 계산
       const yValues = points.map((p) => p.y).sort((a, b) => a - b);
-      const mean = (yValues.reduce((sum, v) => sum + v, 0) / yValues.length).toFixed(1);
+      const mean = yValues.reduce((sum, v) => sum + v, 0) / yValues.length;
       const mid = Math.floor(yValues.length / 2);
-      const median = (yValues.length % 2 === 0 ? (yValues[mid - 1] + yValues[mid]) / 2 : yValues[mid]).toFixed(1);
+      const median = yValues.length % 2 === 0 ? (yValues[mid - 1] + yValues[mid]) / 2 : yValues[mid];
+
+      // 시소 받침대 삼각형
+      ctx.beginPath();
+      ctx.moveTo(fulcrumX, seesawY);
+      ctx.lineTo(fulcrumX - 16, seesawY + 30);
+      ctx.lineTo(fulcrumX + 16, seesawY + 30);
+      ctx.closePath();
+      ctx.fillStyle = "#64748b";
+      ctx.fill();
+
+      // 시소 널판지 (평균 편차에 따른 시각적 밸런스)
+      const tiltAngle = Math.max(-0.25, Math.min(0.25, (mean - 5) * 0.05));
+      ctx.save();
+      ctx.translate(fulcrumX, seesawY);
+      ctx.rotate(tiltAngle);
+
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(-seesawLen / 2, -5, seesawLen, 10);
+
+      // 시소 위의 평균(Mean) 빨간 추 위치
+      const meanPos = ((mean - 5) / 5) * (seesawLen * 0.45);
+      ctx.beginPath();
+      ctx.arc(meanPos, -15, 12, 0, Math.PI * 2);
+      ctx.fillStyle = "#e11d48";
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#e11d48";
+      ctx.font = "bold 11px Pretendard";
+      ctx.fillText(`평균: ${mean.toFixed(1)}`, meanPos - 22, -32);
+
+      // 시소 위의 중앙값(Median) 파란 깃발 위치
+      const medianPos = ((median - 5) / 5) * (seesawLen * 0.45);
+      ctx.beginPath();
+      ctx.arc(medianPos, -12, 9, 0, Math.PI * 2);
+      ctx.fillStyle = "#3b82f6";
+      ctx.fill();
+      ctx.fillStyle = "#1d4ed8";
+      ctx.fillText(`중앙값: ${median.toFixed(1)}`, medianPos - 26, 26);
+
+      ctx.restore();
 
       if (infoEl) {
         infoEl.innerHTML = `
           <div class="font-mono text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-between">
-            <span>자료 개수: ${points.length}개</span>
-            <span>평균(Mean): <strong class="text-rose-600 font-black">${mean}</strong></span>
-            <span>중앙값(Median): <strong class="text-indigo-600 font-black">${median}</strong></span>
+            <span>자료 ${points.length}개</span>
+            <span>평균(Mean): <strong class="text-rose-600 font-black">${mean.toFixed(2)}</strong></span>
+            <span>중앙값(Median): <strong class="text-blue-600 font-black">${median.toFixed(2)}</strong></span>
+            <span class="text-[11px] text-slate-500">화면을 클릭해 점을 추가해보세요!</span>
           </div>
         `;
       }
@@ -1144,19 +1707,18 @@ const SimulationEngine = {
 
     draw();
 
-    // 캔버스 클릭 시 사용자 데이터 점 추가
     canvas.onclick = (e) => {
       const rect = canvas.getBoundingClientRect();
       const margin = 40;
+      const plotH = rect.height * 0.58;
       const plotW = rect.width - margin * 2;
-      const plotH = rect.height - margin * 2;
 
       const clickX = e.clientX - rect.left - margin;
-      const clickY = rect.height - margin - (e.clientY - rect.top);
+      const clickY = plotH - 10 - (e.clientY - rect.top);
 
-      if (clickX >= 0 && clickX <= plotW && clickY >= 0 && clickY <= plotH) {
-        const x = (clickX / plotW) * 10;
-        const y = (clickY / plotH) * 10;
+      if (clickX >= 0 && clickX <= plotW && clickY >= 0 && clickY <= plotH - 30) {
+        const x = parseFloat(((clickX / plotW) * 10).toFixed(1));
+        const y = parseFloat(((clickY / (plotH - 30)) * 10).toFixed(1));
         points.push({ x, y });
         draw();
       }
@@ -1203,8 +1765,7 @@ const SimulationEngine = {
     });
 
     document.getElementById("btnAddOutlier").addEventListener("click", () => {
-      // 이상치 추가: x=1인데 y=10 (극단적 천재)
-      points.push({ x: 1, y: 10 });
+      points.push({ x: 9, y: 10 });
       draw();
     });
   }
